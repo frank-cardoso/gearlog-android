@@ -30,5 +30,12 @@ Projeto desenvolvido para a disciplina de ABP (Aprendizagem Baseada em Projetos)
 * **João Miguel** - [JoaoMiguelRita](https://github.com/JoaoMiguelRita)
 
 
+## 📱 Integrações Nativas (Hardware/OS)
+
+* **Câmera:** Captura de fotos dos veículos e comprovantes de manutenção.
+* **Notificações:** Alertas de revisões preventivas baseadas em data/KM.
+* **Biometria:** Autenticação segura para acesso ao perfil do usuário.
+* **API de Compartilhamento:** Exportação de listas de peças para fornecedores.
+
 ---
 *Projeto acadêmico focado em resolver problemas reais de entusiastas automotivos.*
