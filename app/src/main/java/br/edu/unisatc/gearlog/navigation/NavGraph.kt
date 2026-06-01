@@ -63,6 +63,15 @@ fun NavGraph(modifier: Modifier = Modifier) {
                 },
                 onRegisterClick = {
                     navController.navigate("register")
+                },
+                onBiometricSuccess = {
+                    if (auth.currentUser != null) {
+                        navController.navigate("dashboard") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    } else {
+                        Toast.makeText(context, "Por favor, faça o login com e-mail e senha a primeira vez.", Toast.LENGTH_LONG).show()
+                    }
                 }
             )
         }
