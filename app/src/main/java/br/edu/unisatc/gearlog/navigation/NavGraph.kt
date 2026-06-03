@@ -101,7 +101,7 @@ fun NavGraph(modifier: Modifier = Modifier) {
 
         composable("dashboard") {
             val viewModel: VehicleViewModel = viewModel(factory = vehicleViewModelFactory)
-            DashboardScreen(
+            br.edu.unisatc.gearlog.ui.MainScreen(
                 viewModel = viewModel,
                 onAddVehicleClick = { navController.navigate("add_vehicle") }
             )
