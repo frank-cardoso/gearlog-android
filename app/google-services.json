@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "430115986471",
+    "project_id": "gearlog-android",
+    "storage_bucket": "gearlog-android.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:430115986471:android:383d114d03e505bc1ac202",
+        "android_client_info": {
+          "package_name": "br.edu.unisatc.gearlog"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "430115986471-16g35u1a4do5mdki4gbn2plr340sqc99.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.edu.unisatc.gearlog",
+            "certificate_hash": "9c37f0163e6d84d62cc2cb84b605371359f73536"
+          }
+        },
+        {
+          "client_id": "430115986471-irm5p2838qjqdf4m0to5niaamk73hfk6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPOeqXiILEQF9z-4zy7An42wz0Ri2R958"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "430115986471-irm5p2838qjqdf4m0to5niaamk73hfk6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

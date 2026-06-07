@@ -21,6 +21,13 @@ import br.edu.unisatc.gearlog.ui.vehicle.VehicleViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.DrawerValue
+import kotlinx.coroutines.launch
+import br.edu.unisatc.gearlog.ui.components.AppDrawer
+
 @Composable
 fun NavGraph(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
@@ -91,11 +98,61 @@ fun NavGraph(modifier: Modifier = Modifier) {
         }
 
         composable("dashboard") {
-            val viewModel: VehicleViewModel = viewModel(factory = vehicleViewModelFactory)
-            DashboardScreen(
-                viewModel = viewModel,
-                onAddVehicleClick = { navController.navigate("add_vehicle") }
-            )
+
+            val viewModel: VehicleViewModel =
+                viewModel(factory = vehicleViewModelFactory)
+
+            val drawerState =
+                rememberDrawerState(initialValue = DrawerValue.Closed)
+
+            val scope = rememberCoroutineScope()
+
+            ModalNavigationDrawer(
+
+                drawerState = drawerState,
+
+                drawerContent = {
+                    AppDrawer(
+
+                        currentRoute = "dashboard",
+
+                        onNavigate = {
+
+                            navController.navigate(it)
+
+                            scope.launch {
+                                drawerState.close()
+                            }
+                        },
+
+                        onLogout = {
+
+                            auth.signOut()
+
+                            navController.navigate("login") {
+                                popUpTo(0)
+                            }
+                        }
+                    )
+                }
+
+            ) {
+
+                DashboardScreen(
+
+                    viewModel = viewModel,
+
+                    onAddVehicleClick = {
+                        navController.navigate("add_vehicle")
+                    },
+
+                    onMenuClick = {
+                        scope.launch {
+                            drawerState.open()
+                        }
+                    }
+                )
+            }
         }
 
         composable("add_vehicle") {

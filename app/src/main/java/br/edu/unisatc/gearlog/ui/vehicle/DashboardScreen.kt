@@ -21,18 +21,42 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import java.util.Locale
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     viewModel: VehicleViewModel,
-    onAddVehicleClick: () -> Unit
+    onAddVehicleClick: () -> Unit,
+    onMenuClick: () -> Unit
 ) {
     val vehicles by viewModel.vehicles.collectAsState()
     val heroVehicle = vehicles.firstOrNull()
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Dashboard") })
+            TopAppBar(
+
+                title = {
+                    Text("Dashboard")
+                },
+
+                navigationIcon = {
+
+                    IconButton(
+                        onClick = onMenuClick
+                    ) {
+
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = "Abrir menu"
+                        )
+                    }
+                }
+            )
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
