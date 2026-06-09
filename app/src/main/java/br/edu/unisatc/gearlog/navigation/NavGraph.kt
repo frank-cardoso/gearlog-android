@@ -25,8 +25,13 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material3.DrawerValue
+import br.edu.unisatc.gearlog.data.local.DataStoreManager
+import br.edu.unisatc.gearlog.repository.SettingsRepository
 import kotlinx.coroutines.launch
 import br.edu.unisatc.gearlog.ui.components.AppDrawer
+import br.edu.unisatc.gearlog.ui.settings.SettingsScreen
+import br.edu.unisatc.gearlog.ui.settings.SettingsViewModel
+import br.edu.unisatc.gearlog.ui.settings.SettingsViewModelFactory
 
 @Composable
 fun NavGraph(modifier: Modifier = Modifier) {
@@ -169,6 +174,22 @@ fun NavGraph(modifier: Modifier = Modifier) {
             AddVehicleScreen(
                 viewModel = viewModel,
                 onSaved = { navController.popBackStack() }
+            )
+        }
+
+        composable(route = "settings") {
+            val context = LocalContext.current
+
+            val dataStoreManager = DataStoreManager(context)
+            val repository = SettingsRepository(dataStoreManager)
+
+            val factory = SettingsViewModelFactory(repository)
+
+            val viewModel: SettingsViewModel = viewModel(factory = factory)
+
+            SettingsScreen(
+                viewModel = viewModel,
+                onBackClick = { navController.popBackStack() }
             )
         }
     }

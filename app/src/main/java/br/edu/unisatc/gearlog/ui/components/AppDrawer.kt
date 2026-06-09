@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -59,6 +60,16 @@ fun AppDrawer(
             selected = false,
             onClick = {},
             icon = { Icon(Icons.Default.DirectionsCar, null) }
+        )
+
+        NavigationDrawerItem(
+            label = { Text("Configurações") },
+            selected = false,
+            onClick = {onNavigate("settings")},
+            icon = { Icon(Icons.Default.Settings, null) },
+            colors = NavigationDrawerItemDefaults.colors(
+                selectedContainerColor = PremiumPrimary
+            )
         )
 
         HorizontalDivider()
