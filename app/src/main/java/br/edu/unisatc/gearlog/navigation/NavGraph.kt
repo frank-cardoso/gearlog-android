@@ -12,8 +12,10 @@ import androidx.navigation.compose.rememberNavController
 import br.edu.unisatc.gearlog.data.remote.FipeApiClient
 import br.edu.unisatc.gearlog.data.remote.FipeDataSource
 import br.edu.unisatc.gearlog.data.repository.VehicleRepositoryImpl
+import br.edu.unisatc.gearlog.ui.ProfileScreen
 import br.edu.unisatc.gearlog.ui.login.LoginScreen
 import br.edu.unisatc.gearlog.ui.login.RegisterScreen
+import br.edu.unisatc.gearlog.ui.theme.ThemeViewModel
 import br.edu.unisatc.gearlog.ui.vehicle.AddVehicleScreen
 import br.edu.unisatc.gearlog.ui.vehicle.DashboardScreen
 import br.edu.unisatc.gearlog.ui.vehicle.VehicleViewModel
@@ -21,15 +23,8 @@ import br.edu.unisatc.gearlog.ui.vehicle.VehicleViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.rememberDrawerState
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.material3.DrawerValue
-import kotlinx.coroutines.launch
-import br.edu.unisatc.gearlog.ui.components.AppDrawer
-
 @Composable
-fun NavGraph(modifier: Modifier = Modifier) {
+fun NavGraph(modifier: Modifier = Modifier, themeViewModel: ThemeViewModel) {
     val navController = rememberNavController()
     val context = LocalContext.current
     val auth = FirebaseAuth.getInstance()
@@ -107,61 +102,12 @@ fun NavGraph(modifier: Modifier = Modifier) {
         }
 
         composable("dashboard") {
-
-            val viewModel: VehicleViewModel =
-                viewModel(factory = vehicleViewModelFactory)
-
-            val drawerState =
-                rememberDrawerState(initialValue = DrawerValue.Closed)
-
-            val scope = rememberCoroutineScope()
-
-            ModalNavigationDrawer(
-
-                drawerState = drawerState,
-
-                drawerContent = {
-                    AppDrawer(
-
-                        currentRoute = "dashboard",
-
-                        onNavigate = {
-
-                            navController.navigate(it)
-
-                            scope.launch {
-                                drawerState.close()
-                            }
-                        },
-
-                        onLogout = {
-
-                            auth.signOut()
-
-                            navController.navigate("login") {
-                                popUpTo(0)
-                            }
-                        }
-                    )
-                }
-
-            ) {
-
-                DashboardScreen(
-
-                    viewModel = viewModel,
-
-                    onAddVehicleClick = {
-                        navController.navigate("add_vehicle")
-                    },
-
-                    onMenuClick = {
-                        scope.launch {
-                            drawerState.open()
-                        }
-                    }
-                )
-            }
+            val viewModel: VehicleViewModel = viewModel(factory = vehicleViewModelFactory)
+            br.edu.unisatc.gearlog.ui.MainScreen(
+                viewModel = viewModel,
+                themeViewModel = themeViewModel,
+                onAddVehicleClick = { navController.navigate("add_vehicle") }
+            )
         }
 
         composable("add_vehicle") {
@@ -169,6 +115,13 @@ fun NavGraph(modifier: Modifier = Modifier) {
             AddVehicleScreen(
                 viewModel = viewModel,
                 onSaved = { navController.popBackStack() }
+            )
+        }
+
+        composable("profile") {
+            ProfileScreen(
+                themeViewModel = themeViewModel,
+                onBackClick = { navController.popBackStack() }
             )
         }
     }
