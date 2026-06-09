@@ -4,9 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.edu.unisatc.gearlog.data.repository.VehicleRepository
 import br.edu.unisatc.gearlog.model.FipeOption
+import br.edu.unisatc.gearlog.model.LogRecord
 import br.edu.unisatc.gearlog.model.Vehicle
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -47,6 +50,9 @@ class VehicleViewModel(
 
     private val _isLoadingVehicles = MutableStateFlow(false)
     val isLoadingVehicles: StateFlow<Boolean> = _isLoadingVehicles.asStateFlow()
+
+    private val _vehicleLogs = MutableStateFlow<List<LogRecord>>(emptyList())
+    val vehicleLogs: StateFlow<List<LogRecord>> = _vehicleLogs.asStateFlow()
 
     val vehicles: StateFlow<List<Vehicle>> = (FirebaseAuth.getInstance().currentUser?.uid?.let { repository.getVehicles(it) }
         ?: flowOf<List<Vehicle>>(emptyList()))
@@ -236,6 +242,42 @@ class VehicleViewModel(
             }
             .addOnFailureListener { exception ->
                 onError?.invoke(exception)
+            }
+    }
+
+    fun uploadModImage(uri: android.net.Uri, onSuccess: (String) -> Unit, onError: (Exception) -> Unit) {
+        val storage = FirebaseStorage.getInstance().reference
+        val imageRef = storage.child("images/mods/${UUID.randomUUID()}.jpg")
+
+        imageRef.putFile(uri)
+            .addOnSuccessListener {
+                imageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                    onSuccess(downloadUri.toString())
+                }.addOnFailureListener { exception ->
+                    onError(exception)
+                }
+            }
+            .addOnFailureListener { exception ->
+                onError(exception)
+            }
+    }
+
+    fun fetchVehicleLogs(vehicleId: String) {
+        val firestore = FirebaseFirestore.getInstance()
+        val logsCollection = firestore.collection("vehicles").document(vehicleId).collection("logs")
+
+        logsCollection
+            .orderBy("date", com.google.firebase.firestore.Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, exception ->
+                if (exception != null) {
+                    return@addSnapshotListener
+                }
+
+                val logs = snapshot?.documents?.mapNotNull { doc ->
+                    doc.toObject(LogRecord::class.java)
+                } ?: emptyList()
+
+                _vehicleLogs.value = logs
             }
     }
 

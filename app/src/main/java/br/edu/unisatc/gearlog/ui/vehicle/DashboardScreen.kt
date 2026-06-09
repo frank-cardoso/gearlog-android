@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -25,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.TextButton
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.filled.Build
@@ -42,22 +44,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.width
+import androidx.navigation.NavController
 import java.util.Locale
+import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.TimeZone
 import br.edu.unisatc.gearlog.ui.theme.PremiumCard
 import br.edu.unisatc.gearlog.ui.theme.JdmRed
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
+import br.edu.unisatc.gearlog.model.LogRecord
+import br.edu.unisatc.gearlog.ui.navigation.GearLogScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     viewModel: VehicleViewModel,
+    navController: NavController,
     onAddVehicleClick: () -> Unit,
     onAddMaintenanceClick: () -> Unit,
-    onAddModClick: () -> Unit
+    onAddModClick: () -> Unit,
+    onProfileClick: () -> Unit
 ) {
     val currentVehicle by viewModel.currentVehicle.collectAsState()
+    val vehicleLogs by viewModel.vehicleLogs.collectAsState()
     val isLoadingVehicles by viewModel.isLoadingVehicles.collectAsState()
     val currentVehicleState = currentVehicle
     val loadingVehiclesState = isLoadingVehicles
@@ -69,46 +78,21 @@ fun DashboardScreen(
         viewModel.fetchMyVehicles()
     }
 
-    data class LogEntry(val id: String, val title: String, val date: String, val value: String)
-
-    val recordsState = remember { mutableStateOf<List<LogEntry>>(emptyList()) }
-
-    DisposableEffect(currentVehicleState?.id) {
-        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-        if (currentUserId.isNullOrBlank() || currentVehicleState == null) {
-            recordsState.value = emptyList()
-            return@DisposableEffect onDispose { }
+    LaunchedEffect(currentVehicleState?.id) {
+        currentVehicleState?.id?.let { vehicleId ->
+            viewModel.fetchVehicleLogs(vehicleId)
         }
-
-        val db = FirebaseFirestore.getInstance()
-        val registration: ListenerRegistration = db.collection("records")
-            .whereEqualTo("userId", currentUserId)
-            .whereEqualTo("vehicleId", currentVehicleState.id)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    recordsState.value = emptyList()
-                    return@addSnapshotListener
-                }
-
-                val list = snapshot?.documents?.mapNotNull { doc ->
-                    val title = doc.getString("title") ?: doc.getString("description") ?: "Registro"
-                    val date = doc.getString("date") ?: ""
-                    val value = doc.getString("value") ?: ""
-                    LogEntry(doc.id, title, date, value)
-                } ?: emptyList()
-
-                recordsState.value = list
-            }
-
-        onDispose { registration.remove() }
     }
+
+    val totalMods = vehicleLogs.count { it.type == "MOD" }
+    val currentOdometer = vehicleLogs.maxOfOrNull { it.odometer } ?: currentVehicleState?.odometer ?: 0
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Dashboard") },
                 actions = {
-                    IconButton(onClick = { /* abrir perfil/config no futuro */ }) {
+                    IconButton(onClick = onProfileClick) {
                         Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "Perfil")
                     }
                 }
@@ -258,8 +242,8 @@ fun DashboardScreen(
 
                     item {
                         SummaryBar(
-                            odometerKm = vehicle.odometer,
-                            modsCount = vehicle.modsCount
+                            odometerKm = currentOdometer,
+                            modsCount = totalMods
                         )
                     }
 
@@ -277,39 +261,103 @@ fun DashboardScreen(
                     }
 
                     item {
-                        Text(
-                            text = "Últimos Registros",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color.White
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Últimos Registros",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color.White
+                            )
+                            TextButton(
+                                onClick = { navController.navigate(GearLogScreen.History.route) }
+                            ) {
+                                Text(
+                                    text = "Ver Histórico Completo",
+                                    color = JdmRed
+                                )
+                            }
+                        }
                     }
 
-                    val records = recordsState.value
-
-                    if (records.isEmpty()) {
+                    if (vehicleLogs.isEmpty()) {
                         item {
-                            Text(text = "Não possui registros de manutenção", color = Color.LightGray)
+                            Text(text = "Não possui registros", color = Color.LightGray)
                         }
                     } else {
-                        items(records) { entry ->
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = CardDefaults.cardColors(containerColor = PremiumCard)
-                            ) {
-                                Column(modifier = Modifier.padding(12.dp)) {
-                                    Text(text = entry.title, style = MaterialTheme.typography.bodyLarge, color = Color.White)
-                                    Spacer(modifier = Modifier.height(6.dp))
-                                    Text(text = entry.date, style = MaterialTheme.typography.bodySmall, color = Color.LightGray)
-                                    Spacer(modifier = Modifier.height(6.dp))
-                                    Text(text = entry.value, style = MaterialTheme.typography.bodyMedium, color = Color.White)
-                                }
-                            }
+                        items(vehicleLogs.take(5)) { log ->
+                            LogHistoryCard(log = log)
                         }
                     }
 
                     item {
                         Spacer(modifier = Modifier.height(6.dp))
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LogHistoryCard(log: LogRecord) {
+    val isMod = log.type == "MOD"
+    val icon = if (isMod) Icons.Default.FlashOn else Icons.Default.Build
+    val iconColor = if (isMod) JdmRed else MaterialTheme.colorScheme.primary
+    val detailColor = if (isMod) JdmRed else Color.Gray
+
+    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    dateFormat.timeZone = TimeZone.getDefault()
+    val formattedDate = dateFormat.format(Date(log.date))
+
+    val costFormat = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
+    val formattedCost = costFormat.format(log.cost)
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = PremiumCard)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconColor,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = log.title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = formattedDate,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.LightGray
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = formattedCost,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = detailColor
+                    )
+                    Text(
+                        text = "${log.odometer} km",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.LightGray
+                    )
                 }
             }
         }

@@ -12,8 +12,10 @@ import androidx.navigation.compose.rememberNavController
 import br.edu.unisatc.gearlog.data.remote.FipeApiClient
 import br.edu.unisatc.gearlog.data.remote.FipeDataSource
 import br.edu.unisatc.gearlog.data.repository.VehicleRepositoryImpl
+import br.edu.unisatc.gearlog.ui.ProfileScreen
 import br.edu.unisatc.gearlog.ui.login.LoginScreen
 import br.edu.unisatc.gearlog.ui.login.RegisterScreen
+import br.edu.unisatc.gearlog.ui.theme.ThemeViewModel
 import br.edu.unisatc.gearlog.ui.vehicle.AddVehicleScreen
 import br.edu.unisatc.gearlog.ui.vehicle.DashboardScreen
 import br.edu.unisatc.gearlog.ui.vehicle.VehicleViewModel
@@ -22,7 +24,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
-fun NavGraph(modifier: Modifier = Modifier) {
+fun NavGraph(modifier: Modifier = Modifier, themeViewModel: ThemeViewModel) {
     val navController = rememberNavController()
     val context = LocalContext.current
     val auth = FirebaseAuth.getInstance()
@@ -103,6 +105,7 @@ fun NavGraph(modifier: Modifier = Modifier) {
             val viewModel: VehicleViewModel = viewModel(factory = vehicleViewModelFactory)
             br.edu.unisatc.gearlog.ui.MainScreen(
                 viewModel = viewModel,
+                themeViewModel = themeViewModel,
                 onAddVehicleClick = { navController.navigate("add_vehicle") }
             )
         }
@@ -112,6 +115,13 @@ fun NavGraph(modifier: Modifier = Modifier) {
             AddVehicleScreen(
                 viewModel = viewModel,
                 onSaved = { navController.popBackStack() }
+            )
+        }
+
+        composable("profile") {
+            ProfileScreen(
+                themeViewModel = themeViewModel,
+                onBackClick = { navController.popBackStack() }
             )
         }
     }

@@ -18,10 +18,14 @@ import br.edu.unisatc.gearlog.ui.vehicle.DashboardScreen
 import br.edu.unisatc.gearlog.ui.vehicle.VehicleViewModel
 import br.edu.unisatc.gearlog.ui.vehicle.AddMaintenanceScreen
 import br.edu.unisatc.gearlog.ui.vehicle.AddModScreen
+import br.edu.unisatc.gearlog.ui.vehicle.HistoryScreen
+import br.edu.unisatc.gearlog.ui.ProfileScreen
+import br.edu.unisatc.gearlog.ui.theme.ThemeViewModel
 
 @Composable
 fun MainScreen(
     viewModel: VehicleViewModel,
+    themeViewModel: ThemeViewModel,
     onAddVehicleClick: () -> Unit
 ) {
     val navController = rememberNavController()
@@ -38,9 +42,11 @@ fun MainScreen(
                 composable(GearLogScreen.Dashboard.route) {
                     DashboardScreen(
                         viewModel = viewModel,
+                        navController = navController,
                         onAddVehicleClick = onAddVehicleClick,
                         onAddMaintenanceClick = { navController.navigate(GearLogScreen.AddMaintenance.route) },
-                        onAddModClick = { navController.navigate(GearLogScreen.AddMod.route) }
+                        onAddModClick = { navController.navigate(GearLogScreen.AddMod.route) },
+                        onProfileClick = { navController.navigate(GearLogScreen.Profile.route) }
                     )
                 }
                 composable(GearLogScreen.AddMaintenance.route) {
@@ -63,9 +69,10 @@ fun MainScreen(
                     }
                 }
                 composable(GearLogScreen.History.route) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(text = "Histórico")
-                    }
+                    HistoryScreen(
+                        viewModel = viewModel,
+                        onProfileClick = { navController.navigate(GearLogScreen.Profile.route) }
+                    )
                 }
                 composable(GearLogScreen.Parts.route) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -73,9 +80,10 @@ fun MainScreen(
                     }
                 }
                 composable(GearLogScreen.Profile.route) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(text = "Perfil")
-                    }
+                    ProfileScreen(
+                        themeViewModel = themeViewModel,
+                        onBackClick = { navController.popBackStack() }
+                    )
                 }
             }
         }

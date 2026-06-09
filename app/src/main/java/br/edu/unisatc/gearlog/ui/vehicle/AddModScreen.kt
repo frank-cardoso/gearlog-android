@@ -1,11 +1,18 @@
 package br.edu.unisatc.gearlog.ui.vehicle
 
+import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -15,16 +22,42 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.edu.unisatc.gearlog.ui.theme.JdmRed
 import br.edu.unisatc.gearlog.model.LogRecord
+import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.UUID
+
+fun saveImageLocally(context: Context, uri: Uri): String? {
+    return try {
+        val inputStream: InputStream = context.contentResolver.openInputStream(uri) ?: return null
+        val fileName = "mod_${UUID.randomUUID()}.jpg"
+        val outputFile = File(context.filesDir, fileName)
+        val outputStream = FileOutputStream(outputFile)
+
+        inputStream.use { input ->
+            outputStream.use { output ->
+                input.copyTo(output)
+            }
+        }
+
+        outputFile.absolutePath
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,7 +67,9 @@ fun AddModScreen(
     onBackClick: () -> Unit
 ) {
     val currentVehicle by viewModel.currentVehicle.collectAsState()
+    val context = LocalContext.current
 
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var upgradeName by rememberSaveable { mutableStateOf("") }
     var partBrand by rememberSaveable { mutableStateOf("") }
     var dateText by rememberSaveable { mutableStateOf("") }
@@ -43,6 +78,11 @@ fun AddModScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri -> selectedImageUri = uri }
+    )
 
     val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
@@ -115,7 +155,7 @@ fun AddModScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
             )
 
-            // Placeholder de foto com borda tracejada (mock clicável)
+            // Placeholder de foto com borda tracejada (clicável)
             val borderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
             Box(
                 modifier = Modifier
@@ -132,14 +172,25 @@ fun AddModScreen(
                         )
                     }
                     .clickable {
-                        coroutineScope.launch { snackbarHostState.showSnackbar("Adicionar foto - em construção") }
+                        photoPickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(imageVector = Icons.Filled.CameraAlt, contentDescription = "Adicionar Foto", tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.size(40.dp))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("Adicionar Foto da Peça", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), fontSize = 14.sp)
+                if (selectedImageUri != null) {
+                    AsyncImage(
+                        model = selectedImageUri,
+                        contentDescription = "Foto da Peça",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(imageVector = Icons.Filled.CameraAlt, contentDescription = "Adicionar Foto", tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.size(40.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("Adicionar Foto da Peça", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), fontSize = 14.sp)
+                    }
                 }
             }
 
@@ -171,6 +222,12 @@ fun AddModScreen(
                     val odometer = odometerText.toIntOrNull() ?: 0
                     val cost = costText.replace(',', '.').toDoubleOrNull() ?: 0.0
 
+                    val photoUrl = if (selectedImageUri != null) {
+                        saveImageLocally(context, selectedImageUri!!) ?: ""
+                    } else {
+                        ""
+                    }
+
                     val log = LogRecord(
                         id = "",
                         type = "MOD",
@@ -180,7 +237,7 @@ fun AddModScreen(
                         cost = cost,
                         description = "",
                         partBrand = partBrand.trim(),
-                        photoUrl = ""
+                        photoUrl = photoUrl
                     )
 
                     val vehicle = currentVehicle!!
