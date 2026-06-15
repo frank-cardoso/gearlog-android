@@ -79,4 +79,5 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation(libs.androidx.biometric)
+    implementation("com.vanniktech:android-image-cropper:4.6.0")
 }

@@ -20,13 +20,19 @@ import br.edu.unisatc.gearlog.ui.vehicle.AddMaintenanceScreen
 import br.edu.unisatc.gearlog.ui.vehicle.AddModScreen
 import br.edu.unisatc.gearlog.ui.vehicle.HistoryScreen
 import br.edu.unisatc.gearlog.ui.ProfileScreen
+import br.edu.unisatc.gearlog.ui.parts.PartDetailsScreen
 import br.edu.unisatc.gearlog.ui.theme.ThemeViewModel
+import br.edu.unisatc.gearlog.ui.parts.PartsScreen
+import br.edu.unisatc.gearlog.ui.parts.PartsViewModel
 
 @Composable
 fun MainScreen(
     viewModel: VehicleViewModel,
     themeViewModel: ThemeViewModel,
-    onAddVehicleClick: () -> Unit
+    partsViewModel: PartsViewModel,
+    onAddVehicleClick: () -> Unit,
+    onAddPartClick: (String) -> Unit,
+    onEditPartClick: (String) -> Unit
 ) {
     val navController = rememberNavController()
 
@@ -75,9 +81,21 @@ fun MainScreen(
                     )
                 }
                 composable(GearLogScreen.Parts.route) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(text = "Peças")
-                    }
+                    PartsScreen(
+                        onProfileClick = { navController.navigate(GearLogScreen.Profile.route) },
+                        onAddPartClick = onAddPartClick,
+                        onPartClick = { partId -> navController.navigate("part_details/$partId") },
+                        viewModel = partsViewModel
+                    )
+                }
+                composable("part_details/{partId}") { backStackEntry ->
+                    val partId = backStackEntry.arguments?.getString("partId") ?: ""
+                    PartDetailsScreen(
+                        viewModel = partsViewModel,
+                        partId = partId,
+                        onBackClick = { navController.popBackStack() },
+                        onEditClick = { onEditPartClick(partId) }
+                    )
                 }
                 composable(GearLogScreen.Profile.route) {
                     ProfileScreen(
@@ -89,5 +107,3 @@ fun MainScreen(
         }
     }
 }
-
-
