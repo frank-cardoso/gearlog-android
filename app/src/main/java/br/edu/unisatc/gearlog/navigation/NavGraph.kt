@@ -17,11 +17,13 @@ import br.edu.unisatc.gearlog.ui.login.LoginScreen
 import br.edu.unisatc.gearlog.ui.login.RegisterScreen
 import br.edu.unisatc.gearlog.ui.theme.ThemeViewModel
 import br.edu.unisatc.gearlog.ui.vehicle.AddVehicleScreen
-import br.edu.unisatc.gearlog.ui.vehicle.DashboardScreen
 import br.edu.unisatc.gearlog.ui.vehicle.VehicleViewModel
 import br.edu.unisatc.gearlog.ui.vehicle.VehicleViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import br.edu.unisatc.gearlog.ui.parts.AddPartScreen
+import br.edu.unisatc.gearlog.ui.parts.PartsViewModel
+import br.edu.unisatc.gearlog.ui.MainScreen
 
 @Composable
 fun NavGraph(modifier: Modifier = Modifier, themeViewModel: ThemeViewModel) {
@@ -35,6 +37,7 @@ fun NavGraph(modifier: Modifier = Modifier, themeViewModel: ThemeViewModel) {
         )
     }
     val vehicleViewModelFactory = remember { VehicleViewModelFactory(vehicleRepository) }
+    val partsViewModel: PartsViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -103,10 +106,13 @@ fun NavGraph(modifier: Modifier = Modifier, themeViewModel: ThemeViewModel) {
 
         composable("dashboard") {
             val viewModel: VehicleViewModel = viewModel(factory = vehicleViewModelFactory)
-            br.edu.unisatc.gearlog.ui.MainScreen(
+            MainScreen(
                 viewModel = viewModel,
                 themeViewModel = themeViewModel,
-                onAddVehicleClick = { navController.navigate("add_vehicle") }
+                partsViewModel = partsViewModel,
+                onAddVehicleClick = { navController.navigate("add_vehicle") },
+                onAddPartClick = { status -> navController.navigate("add_part/$status") },
+                onEditPartClick = { partId -> navController.navigate("edit_part/$partId") }
             )
         }
 
@@ -122,6 +128,26 @@ fun NavGraph(modifier: Modifier = Modifier, themeViewModel: ThemeViewModel) {
             ProfileScreen(
                 themeViewModel = themeViewModel,
                 onBackClick = { navController.popBackStack() }
+            )
+        }
+        composable(route = "add_part/{status}") { backStackEntry ->
+            val status = backStackEntry.arguments?.getString("status") ?: "INVENTORY"
+
+            AddPartScreen(
+                viewModel = partsViewModel,
+                initialStatus = status,
+                onBackClick = { navController.popBackStack() },
+                onSaveSuccess = { navController.popBackStack() }
+            )
+        }
+        composable(route = "edit_part/{partId}") { backStackEntry ->
+            val partId = backStackEntry.arguments?.getString("partId") ?: ""
+            AddPartScreen(
+                viewModel = partsViewModel,
+                initialStatus = "INVENTORY",
+                partId = partId,
+                onBackClick = { navController.popBackStack() },
+                onSaveSuccess = { navController.popBackStack() }
             )
         }
     }
