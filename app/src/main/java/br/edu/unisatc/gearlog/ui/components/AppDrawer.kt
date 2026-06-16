@@ -13,8 +13,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import br.edu.unisatc.gearlog.ui.theme.PremiumCard
-import br.edu.unisatc.gearlog.ui.theme.PremiumPrimary
 
 @Composable
 fun AppDrawer(
@@ -24,7 +22,7 @@ fun AppDrawer(
 ) {
 
     ModalDrawerSheet(
-        drawerContainerColor = PremiumCard
+        drawerContainerColor = MaterialTheme.colorScheme.surface
     ) {
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -32,7 +30,8 @@ fun AppDrawer(
         Text(
             text = "GEARLOG",
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         NavigationDrawerItem(
@@ -41,7 +40,9 @@ fun AppDrawer(
             onClick = { onNavigate("dashboard") },
             icon = { Icon(Icons.Default.Home, null) },
             colors = NavigationDrawerItemDefaults.colors(
-                selectedContainerColor = PremiumPrimary
+                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                selectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                selectedTextColor = MaterialTheme.colorScheme.onPrimary
             )
         )
 
@@ -51,7 +52,9 @@ fun AppDrawer(
             onClick = { onNavigate("add_vehicle") },
             icon = { Icon(Icons.Default.Add, null) },
             colors = NavigationDrawerItemDefaults.colors(
-                selectedContainerColor = PremiumPrimary
+                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                selectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                selectedTextColor = MaterialTheme.colorScheme.onPrimary
             )
         )
 
@@ -68,7 +71,9 @@ fun AppDrawer(
             onClick = {onNavigate("settings")},
             icon = { Icon(Icons.Default.Settings, null) },
             colors = NavigationDrawerItemDefaults.colors(
-                selectedContainerColor = PremiumPrimary
+                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                selectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                selectedTextColor = MaterialTheme.colorScheme.onPrimary
             )
         )
 

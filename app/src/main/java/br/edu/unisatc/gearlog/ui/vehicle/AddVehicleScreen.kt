@@ -34,16 +34,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import br.edu.unisatc.gearlog.ui.theme.JdmDark
-import br.edu.unisatc.gearlog.ui.theme.JdmRed
 import br.edu.unisatc.gearlog.ui.theme.MontserratFontFamily
-import br.edu.unisatc.gearlog.ui.theme.PremiumCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -206,11 +202,11 @@ private fun FipeDropdown(
                 }
             },
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = JdmDark,
-                unfocusedContainerColor = JdmDark,
-                disabledContainerColor = JdmDark,
-                focusedBorderColor = JdmRed,
-                focusedLabelColor = JdmRed
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                focusedLabelColor = MaterialTheme.colorScheme.primary
             )
         )
 
@@ -218,7 +214,7 @@ private fun FipeDropdown(
             ExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
-                modifier = Modifier.background(PremiumCard)
+                modifier = Modifier.background(MaterialTheme.colorScheme.surface)
             ) {
                 options.forEach { option ->
                     val interactionSource = remember { MutableInteractionSource() }
@@ -238,11 +234,11 @@ private fun FipeDropdown(
                             expanded = false
                         },
                         modifier = Modifier.background(
-                            if (isHighlighted) JdmRed.copy(alpha = 0.2f) else PremiumCard
+                            if (isHighlighted) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surface
                         ),
                         interactionSource = interactionSource,
                         colors = MenuDefaults.itemColors(
-                            textColor = Color.White
+                            textColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
                 }
