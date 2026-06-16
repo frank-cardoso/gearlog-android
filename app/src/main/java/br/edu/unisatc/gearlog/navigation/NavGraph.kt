@@ -25,6 +25,8 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material3.DrawerValue
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import br.edu.unisatc.gearlog.data.local.DataStoreManager
 import br.edu.unisatc.gearlog.repository.SettingsRepository
 import kotlinx.coroutines.launch
@@ -44,7 +46,9 @@ fun NavGraph(modifier: Modifier = Modifier) {
             FipeDataSource(FipeApiClient.api)
         )
     }
+    val dataStoreManager = remember { DataStoreManager(context) }
     val vehicleViewModelFactory = remember { VehicleViewModelFactory(vehicleRepository) }
+    val isBiometricEnabled by dataStoreManager.isBiometricEnabled.collectAsState(initial = false)
 
     NavHost(
         navController = navController,
@@ -53,6 +57,7 @@ fun NavGraph(modifier: Modifier = Modifier) {
     ) {
         composable("login") {
             LoginScreen(
+                isBiometricSettingEnabled = isBiometricEnabled,
                 onLoginClick = { email, password ->
                     if (email.isNotEmpty() && password.isNotEmpty()) {
                         auth.signInWithEmailAndPassword(email, password)

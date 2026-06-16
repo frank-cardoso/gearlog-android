@@ -15,32 +15,36 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 class DataStoreManager(private val context: Context) {
 
     companion object {
-        // Definição das chaves tipadas
+        val BIOMETRIC_ENABLED_KEY = booleanPreferencesKey("biometric_enabled")
         val OIL_NOTIFICATIONS_KEY = booleanPreferencesKey("notifications_oil")
+        val DARK_THEME_KEY = booleanPreferencesKey("dark_theme")
+        val TEMPERATURE_UNIT_KEY = stringPreferencesKey("temperature_unit")
         val DISTANCE_UNIT_KEY = stringPreferencesKey("distance_unit")
     }
 
-    // Leitura dos dados (Retorna um Flow que notifica a UI sempre que o dado mudar)
-    val isOilNotificationEnabled: Flow<Boolean> = context.dataStore.data
-        .map { preferences ->
-            preferences[OIL_NOTIFICATIONS_KEY] ?: true // true como padrão
-        }
+    val isBiometricEnabled: Flow<Boolean> = context.dataStore.data.map { it[BIOMETRIC_ENABLED_KEY] ?: false }
+    val isOilNotificationEnabled: Flow<Boolean> = context.dataStore.data.map { it[OIL_NOTIFICATIONS_KEY] ?: true }
+    val isDarkThemeEnabled: Flow<Boolean> = context.dataStore.data.map { it[DARK_THEME_KEY] ?: false }
+    val temperatureUnit: Flow<String> = context.dataStore.data.map { it[TEMPERATURE_UNIT_KEY] ?: "°C" }
+    val distanceUnit: Flow<String> = context.dataStore.data.map { it[DISTANCE_UNIT_KEY] ?: "km" }
 
-    val distanceUnit: Flow<String> = context.dataStore.data
-        .map { preferences ->
-            preferences[DISTANCE_UNIT_KEY] ?: "km"
-        }
-
-    // Escrita dos dados (Funções suspensas para rodar fora da main thread)
     suspend fun setOilChangeNotificationsEnabled(enabled: Boolean) {
-        context.dataStore.edit { preferences ->
-            preferences[OIL_NOTIFICATIONS_KEY] = enabled
-        }
+        context.dataStore.edit { it[OIL_NOTIFICATIONS_KEY] = enabled }
+    }
+
+    suspend fun setDarkThemeEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[DARK_THEME_KEY] = enabled }
+    }
+
+    suspend fun setTemperatureUnit(unit: String) {
+        context.dataStore.edit { it[TEMPERATURE_UNIT_KEY] = unit }
     }
 
     suspend fun setDistanceUnit(unit: String) {
-        context.dataStore.edit { preferences ->
-            preferences[DISTANCE_UNIT_KEY] = unit
-        }
+        context.dataStore.edit { it[DISTANCE_UNIT_KEY] = unit }
+    }
+
+    suspend fun setBiometricEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[BIOMETRIC_ENABLED_KEY] = enabled }
     }
 }

@@ -24,6 +24,7 @@ import androidx.fragment.app.FragmentActivity
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
+    isBiometricSettingEnabled: Boolean,
     onLoginClick: (String, String) -> Unit,
     onRegisterClick: () -> Unit,
     onBiometricSuccess: () -> Unit
@@ -34,12 +35,15 @@ fun LoginScreen(
     val context = LocalContext.current
     var hasAttemptedBiometrics by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        if (!hasAttemptedBiometrics) {
+    LaunchedEffect(isBiometricSettingEnabled) {
+        if (isBiometricSettingEnabled && !hasAttemptedBiometrics) {
             hasAttemptedBiometrics = true
 
             val biometricManager = BiometricManager.from(context)
-            val canAuthenticate = biometricManager.canAuthenticate(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
+            val canAuthenticate = biometricManager.canAuthenticate(
+                BiometricManager.Authenticators.BIOMETRIC_STRONG or
+                        BiometricManager.Authenticators.DEVICE_CREDENTIAL
+            )
 
             if (canAuthenticate == BiometricManager.BIOMETRIC_SUCCESS) {
                 chamarBiometria(context, onBiometricSuccess)
