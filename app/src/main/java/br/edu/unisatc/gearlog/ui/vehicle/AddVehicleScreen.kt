@@ -123,16 +123,6 @@ fun AddVehicleScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = state.modsCount,
-                onValueChange = viewModel::onModsCountChange,
-                label = { Text("Quantidade de mods") },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-            )
-
             Spacer(modifier = Modifier.height(20.dp))
 
             Button(
