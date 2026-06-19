@@ -21,6 +21,20 @@ import br.edu.unisatc.gearlog.ui.vehicle.VehicleViewModel
 import br.edu.unisatc.gearlog.ui.vehicle.VehicleViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.DrawerValue
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import br.edu.unisatc.gearlog.data.local.DataStoreManager
+import br.edu.unisatc.gearlog.repository.SettingsRepository
+import kotlinx.coroutines.launch
+import br.edu.unisatc.gearlog.ui.components.AppDrawer
+import br.edu.unisatc.gearlog.ui.settings.SettingsScreen
+import br.edu.unisatc.gearlog.ui.settings.SettingsViewModel
+import br.edu.unisatc.gearlog.ui.settings.SettingsViewModelFactory
 import br.edu.unisatc.gearlog.ui.parts.AddPartScreen
 import br.edu.unisatc.gearlog.ui.parts.PartsViewModel
 import br.edu.unisatc.gearlog.ui.MainScreen
@@ -36,7 +50,9 @@ fun NavGraph(modifier: Modifier = Modifier, themeViewModel: ThemeViewModel) {
             FipeDataSource(FipeApiClient.api)
         )
     }
+    val dataStoreManager = remember { DataStoreManager(context) }
     val vehicleViewModelFactory = remember { VehicleViewModelFactory(vehicleRepository) }
+    val isBiometricEnabled by dataStoreManager.isBiometricEnabled.collectAsState(initial = false)
     val partsViewModel: PartsViewModel = viewModel()
 
     NavHost(
@@ -46,6 +62,7 @@ fun NavGraph(modifier: Modifier = Modifier, themeViewModel: ThemeViewModel) {
     ) {
         composable("login") {
             LoginScreen(
+                isBiometricSettingEnabled = isBiometricEnabled,
                 onLoginClick = { email, password ->
                     if (email.isNotEmpty() && password.isNotEmpty()) {
                         auth.signInWithEmailAndPassword(email, password)
@@ -124,6 +141,21 @@ fun NavGraph(modifier: Modifier = Modifier, themeViewModel: ThemeViewModel) {
             )
         }
 
+        composable(route = "settings") {
+            val context = LocalContext.current
+
+            val dataStoreManager = DataStoreManager(context)
+            val repository = SettingsRepository(dataStoreManager)
+
+            val factory = SettingsViewModelFactory(repository)
+
+            val viewModel: SettingsViewModel = viewModel(factory = factory)
+
+            SettingsScreen(
+                viewModel = viewModel,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
         composable("profile") {
             ProfileScreen(
                 themeViewModel = themeViewModel,

@@ -28,12 +28,13 @@ private val LightColorScheme = lightColorScheme(
     primary = PremiumPrimary,
     onPrimary = PremiumOnPrimary,
     secondary = PremiumMuted,
-    background = PremiumBackground,
-    onBackground = PremiumOnBackground,
-    surface = PremiumCard,
-    onSurface = PremiumOnSurface,
-    surfaceVariant = PremiumCard,
-    onSurfaceVariant = PremiumOnSurface,
+    background = PremiumOnBackground,
+    onBackground = PremiumBackground,
+    surface = PremiumOnSurface,
+    onSurface = PremiumCard,
+    surfaceVariant = PremiumOnSurface,
+    onSurfaceVariant = PremiumCard,
+
     outline = PremiumMuted
 )
 
@@ -54,7 +55,6 @@ fun GearLogTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
