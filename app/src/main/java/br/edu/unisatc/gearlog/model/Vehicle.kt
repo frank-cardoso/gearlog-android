@@ -9,5 +9,6 @@ data class Vehicle(
     val plate: String = "",
     val nickname: String = "",
     val odometer: Int = 0,
-    val modsCount: Int = 0
+    val modsCount: Int = 0,
+    val photoUrl: String = ""
 )

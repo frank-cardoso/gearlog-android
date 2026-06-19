@@ -20,6 +20,7 @@ class DataStoreManager(private val context: Context) {
         val DARK_THEME_KEY = booleanPreferencesKey("dark_theme")
         val TEMPERATURE_UNIT_KEY = stringPreferencesKey("temperature_unit")
         val DISTANCE_UNIT_KEY = stringPreferencesKey("distance_unit")
+        val SELECTED_VEHICLE_ID_KEY = stringPreferencesKey("selected_vehicle_id")
     }
 
     val isBiometricEnabled: Flow<Boolean> = context.dataStore.data.map { it[BIOMETRIC_ENABLED_KEY] ?: false }
@@ -27,6 +28,7 @@ class DataStoreManager(private val context: Context) {
     val isDarkThemeEnabled: Flow<Boolean> = context.dataStore.data.map { it[DARK_THEME_KEY] ?: false }
     val temperatureUnit: Flow<String> = context.dataStore.data.map { it[TEMPERATURE_UNIT_KEY] ?: "°C" }
     val distanceUnit: Flow<String> = context.dataStore.data.map { it[DISTANCE_UNIT_KEY] ?: "km" }
+    val selectedVehicleId: Flow<String?> = context.dataStore.data.map { it[SELECTED_VEHICLE_ID_KEY] }
 
     suspend fun setOilChangeNotificationsEnabled(enabled: Boolean) {
         context.dataStore.edit { it[OIL_NOTIFICATIONS_KEY] = enabled }
@@ -46,5 +48,9 @@ class DataStoreManager(private val context: Context) {
 
     suspend fun setBiometricEnabled(enabled: Boolean) {
         context.dataStore.edit { it[BIOMETRIC_ENABLED_KEY] = enabled }
+    }
+
+    suspend fun setSelectedVehicleId(vehicleId: String) {
+        context.dataStore.edit { it[SELECTED_VEHICLE_ID_KEY] = vehicleId }
     }
 }

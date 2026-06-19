@@ -1,5 +1,6 @@
 package br.edu.unisatc.gearlog.data.repository
 
+import br.edu.unisatc.gearlog.data.local.DataStoreManager
 import br.edu.unisatc.gearlog.data.remote.FipeDataSource
 import br.edu.unisatc.gearlog.data.remote.toDomain
 import br.edu.unisatc.gearlog.model.FipeOption
@@ -13,7 +14,8 @@ import kotlin.coroutines.resume
 
 class VehicleRepositoryImpl(
     private val firestore: FirebaseFirestore,
-    private val fipeDataSource: FipeDataSource
+    private val fipeDataSource: FipeDataSource,
+    private val dataStoreManager: DataStoreManager
 ) : VehicleRepository {
 
     override suspend fun saveVehicle(vehicle: Vehicle): Result<Unit> {
@@ -84,6 +86,29 @@ class VehicleRepositoryImpl(
     override suspend fun fetchYears(referenceCode: Int, brandCode: String, modelCode: String): Result<List<FipeOption>> = runCatching {
         fipeDataSource.getYears(brandCode, modelCode, referenceCode).map { it.toDomain() }
     }.mapError { fipeDataSource.mapError(it) }
+
+    override fun getSelectedVehicleId(): Flow<String?> = dataStoreManager.selectedVehicleId
+
+    override suspend fun setSelectedVehicleId(vehicleId: String) {
+        dataStoreManager.setSelectedVehicleId(vehicleId)
+    }
+
+    override suspend fun deleteVehicle(vehicleId: String): Result<Unit> {
+        return suspendCancellableCoroutine { continuation ->
+            firestore.collection("vehicles").document(vehicleId)
+                .delete()
+                .addOnSuccessListener {
+                    if (continuation.isActive) {
+                        continuation.resume(Result.success(Unit))
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    if (continuation.isActive) {
+                        continuation.resume(Result.failure(exception))
+                    }
+                }
+        }
+    }
 }
 
 private inline fun <T> Result<T>.mapError(transform: (Throwable) -> Throwable): Result<T> {

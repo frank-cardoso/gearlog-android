@@ -23,6 +23,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material3.DrawerValue
@@ -43,14 +44,15 @@ import br.edu.unisatc.gearlog.ui.MainScreen
 fun NavGraph(modifier: Modifier = Modifier, themeViewModel: ThemeViewModel) {
     val navController = rememberNavController()
     val context = LocalContext.current
+    val dataStoreManager = remember { DataStoreManager(context) }
     val auth = FirebaseAuth.getInstance()
     val vehicleRepository = remember {
         VehicleRepositoryImpl(
             FirebaseFirestore.getInstance(),
-            FipeDataSource(FipeApiClient.api)
+            FipeDataSource(FipeApiClient.api),
+            dataStoreManager
         )
     }
-    val dataStoreManager = remember { DataStoreManager(context) }
     val vehicleViewModelFactory = remember { VehicleViewModelFactory(vehicleRepository) }
     val isBiometricEnabled by dataStoreManager.isBiometricEnabled.collectAsState(initial = false)
     val partsViewModel: PartsViewModel = viewModel()
@@ -181,6 +183,10 @@ fun NavGraph(modifier: Modifier = Modifier, themeViewModel: ThemeViewModel) {
                 onBackClick = { navController.popBackStack() },
                 onSaveSuccess = { navController.popBackStack() }
             )
+        }
+        composable("edit_vehicle/{vehicleId}") { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("vehicleId")
+            Text("Tela de Edição em Construção: $id")
         }
     }
 }

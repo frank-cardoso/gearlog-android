@@ -18,6 +18,9 @@ import br.edu.unisatc.gearlog.ui.vehicle.DashboardScreen
 import br.edu.unisatc.gearlog.ui.vehicle.VehicleViewModel
 import br.edu.unisatc.gearlog.ui.vehicle.AddMaintenanceScreen
 import br.edu.unisatc.gearlog.ui.vehicle.AddModScreen
+import br.edu.unisatc.gearlog.ui.vehicle.AddVehicleScreen
+import br.edu.unisatc.gearlog.ui.vehicle.GarageScreen
+import br.edu.unisatc.gearlog.ui.vehicle.EditVehicleScreen
 import br.edu.unisatc.gearlog.ui.vehicle.HistoryScreen
 import br.edu.unisatc.gearlog.ui.ProfileScreen
 import br.edu.unisatc.gearlog.ui.parts.PartDetailsScreen
@@ -69,10 +72,17 @@ fun MainScreen(
                         onBackClick = { navController.popBackStack() }
                     )
                 }
+                composable(GearLogScreen.AddVehicle.route) {
+                    AddVehicleScreen(
+                        viewModel = viewModel,
+                        onSaved = { navController.popBackStack() }
+                    )
+                }
                 composable(GearLogScreen.Garage.route) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(text = "Garagem")
-                    }
+                    GarageScreen(
+                        viewModel = viewModel,
+                        navController = navController
+                    )
                 }
                 composable(GearLogScreen.History.route) {
                     HistoryScreen(
@@ -96,6 +106,10 @@ fun MainScreen(
                         onBackClick = { navController.popBackStack() },
                         onEditClick = { onEditPartClick(partId) }
                     )
+                }
+                composable("edit_vehicle/{vehicleId}") { backStackEntry ->
+                    val id = backStackEntry.arguments?.getString("vehicleId") ?: ""
+                    EditVehicleScreen(vehicleId = id, viewModel = viewModel, navController = navController)
                 }
                 composable(GearLogScreen.Profile.route) {
                     ProfileScreen(

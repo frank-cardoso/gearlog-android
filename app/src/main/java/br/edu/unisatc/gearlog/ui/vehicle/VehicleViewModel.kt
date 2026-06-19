@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 data class AddVehicleUiState(
@@ -58,12 +59,32 @@ class VehicleViewModel(
         ?: flowOf<List<Vehicle>>(emptyList()))
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    val currentVehicle: StateFlow<Vehicle?> = vehicles
-        .map { it.firstOrNull() }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    val currentVehicle: StateFlow<Vehicle?> = combine(
+        vehicles,
+        repository.getSelectedVehicleId()
+    ) { vehicleList, selectedId ->
+        if (selectedId == null) {
+            vehicleList.firstOrNull()
+        } else {
+            vehicleList.find { it.id == selectedId } ?: vehicleList.firstOrNull()
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     init {
         loadReference()
+    }
+
+    fun setCurrentVehicle(vehicle: Vehicle) {
+        viewModelScope.launch {
+            repository.setSelectedVehicleId(vehicle.id)
+        }
+    }
+
+    fun deleteVehicle(vehicleId: String, onResult: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            val result = repository.deleteVehicle(vehicleId)
+            onResult(result.isSuccess)
+        }
     }
 
     fun fetchMyVehicles() {
@@ -259,6 +280,22 @@ class VehicleViewModel(
             }
             .addOnFailureListener { exception ->
                 onError(exception)
+            }
+    }
+
+    /**
+     * Atualiza campos do veículo no Firestore.
+     * updatedData: mapa com campos/valores que devem ser atualizados.
+     */
+    fun updateVehicle(vehicleId: String, updatedData: Map<String, Any>, onResult: (Boolean) -> Unit = {}) {
+        val firestore = FirebaseFirestore.getInstance()
+        val docRef = firestore.collection("vehicles").document(vehicleId)
+        docRef.update(updatedData)
+            .addOnSuccessListener {
+                onResult(true)
+            }
+            .addOnFailureListener {
+                onResult(false)
             }
     }
 
