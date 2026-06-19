@@ -11,4 +11,7 @@ interface VehicleRepository {
     suspend fun fetchBrands(referenceCode: Int): Result<List<FipeOption>>
     suspend fun fetchModels(referenceCode: Int, brandCode: String): Result<List<FipeOption>>
     suspend fun fetchYears(referenceCode: Int, brandCode: String, modelCode: String): Result<List<FipeOption>>
+    fun getSelectedVehicleId(): Flow<String?>
+    suspend fun setSelectedVehicleId(vehicleId: String)
+    suspend fun deleteVehicle(vehicleId: String): Result<Unit>
 }
