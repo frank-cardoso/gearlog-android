@@ -159,9 +159,16 @@ fun NavGraph(modifier: Modifier = Modifier, themeViewModel: ThemeViewModel) {
             )
         }
         composable("profile") {
+            val context = LocalContext.current
+            val dataStoreManager = DataStoreManager(context)
+            val repository = SettingsRepository(dataStoreManager)
+            val factory = SettingsViewModelFactory(repository)
+            val viewModel: SettingsViewModel = viewModel(factory = factory)
+
             ProfileScreen(
                 themeViewModel = themeViewModel,
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                settingsViewModel = viewModel
             )
         }
         composable(route = "add_part/{status}") { backStackEntry ->

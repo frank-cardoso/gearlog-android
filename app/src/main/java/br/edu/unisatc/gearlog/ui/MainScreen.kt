@@ -12,6 +12,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.Text
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import br.edu.unisatc.gearlog.data.local.DataStoreManager
+import br.edu.unisatc.gearlog.repository.SettingsRepository
 import br.edu.unisatc.gearlog.ui.components.GearLogBottomNav
 import br.edu.unisatc.gearlog.ui.navigation.GearLogScreen
 import br.edu.unisatc.gearlog.ui.vehicle.DashboardScreen
@@ -27,6 +31,8 @@ import br.edu.unisatc.gearlog.ui.parts.PartDetailsScreen
 import br.edu.unisatc.gearlog.ui.theme.ThemeViewModel
 import br.edu.unisatc.gearlog.ui.parts.PartsScreen
 import br.edu.unisatc.gearlog.ui.parts.PartsViewModel
+import br.edu.unisatc.gearlog.ui.settings.SettingsViewModel
+import br.edu.unisatc.gearlog.ui.settings.SettingsViewModelFactory
 
 @Composable
 fun MainScreen(
@@ -112,9 +118,15 @@ fun MainScreen(
                     EditVehicleScreen(vehicleId = id, viewModel = viewModel, navController = navController)
                 }
                 composable(GearLogScreen.Profile.route) {
+                    val context = LocalContext.current
+                    val dataStoreManager = DataStoreManager(context)
+                    val repository = SettingsRepository(dataStoreManager)
+                    val factory = SettingsViewModelFactory(repository)
+                    val viewModel: SettingsViewModel = viewModel(factory = factory)
                     ProfileScreen(
                         themeViewModel = themeViewModel,
-                        onBackClick = { navController.popBackStack() }
+                        onBackClick = { navController.popBackStack() },
+                        settingsViewModel = viewModel
                     )
                 }
             }
