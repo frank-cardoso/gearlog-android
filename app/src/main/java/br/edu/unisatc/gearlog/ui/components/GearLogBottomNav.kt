@@ -2,6 +2,7 @@ package br.edu.unisatc.gearlog.ui.components
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -14,9 +15,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.runtime.getValue
 import br.edu.unisatc.gearlog.ui.navigation.GearLogScreen
-import br.edu.unisatc.gearlog.ui.theme.JdmRed
-import br.edu.unisatc.gearlog.ui.theme.PremiumMuted
-import br.edu.unisatc.gearlog.ui.theme.PremiumCard
 
 @Composable
 fun GearLogBottomNav(
@@ -34,7 +32,7 @@ fun GearLogBottomNav(
     val currentRoute = navBackStackEntry?.destination?.route
 
     NavigationBar(
-        containerColor = PremiumCard,
+        containerColor = MaterialTheme.colorScheme.surface,
         modifier = modifier
     ) {
         items.forEach { screen ->
@@ -42,12 +40,9 @@ fun GearLogBottomNav(
                 selected = currentRoute == screen.route,
                 onClick = {
                     navController.navigate(screen.route) {
-                        // Pop up to the start destination of the graph to avoid building up a large stack
                         popUpTo(navController.graph.startDestinationId) {
                         }
-                        // Avoid multiple copies of the same destination when reselecting the same item
                         launchSingleTop = true
-                        // Restore state when reselecting a previously selected item
                         restoreState = true
                     }
                 },
@@ -56,10 +51,10 @@ fun GearLogBottomNav(
                 },
                 label = { Text(screen.title) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = JdmRed,
-                    selectedTextColor = JdmRed,
-                    unselectedIconColor = PremiumMuted,
-                    unselectedTextColor = PremiumMuted,
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     indicatorColor = Color.Transparent
                 ),
                 alwaysShowLabel = true
@@ -67,4 +62,3 @@ fun GearLogBottomNav(
         }
     }
 }
-
