@@ -48,6 +48,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import br.edu.unisatc.gearlog.ui.theme.PremiumPlateBlue
 import br.edu.unisatc.gearlog.ui.theme.PremiumCard
+import br.edu.unisatc.gearlog.ui.theme.premiumMuted
+import br.edu.unisatc.gearlog.ui.theme.premiumCard
 import coil.compose.AsyncImage
 import java.text.NumberFormat
 import java.util.Locale
@@ -64,7 +66,7 @@ fun CarCard(
         modifier = modifier
             .fillMaxWidth()
             .height(180.dp),
-        colors = CardDefaults.cardColors(containerColor = PremiumCard),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.premiumCard),
         shape = RoundedCornerShape(12.dp)
     ) {
         Row(
@@ -82,14 +84,14 @@ fun CarCard(
                     text = displayName,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = nickname,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.LightGray,
+                    color = MaterialTheme.colorScheme.premiumMuted,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -103,7 +105,7 @@ fun CarCard(
                     .weight(1f)
                     .fillMaxHeight()
                     .clip(RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
-                    .background(Color.Black.copy(alpha = 0.2f)),
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
                 if (!photoUrl.isNullOrEmpty()) {
@@ -114,12 +116,12 @@ fun CarCard(
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    Icon(
-                        imageVector = Icons.Default.DirectionsCar,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp),
-                        tint = Color.White.copy(alpha = 0.15f)
-                    )
+                        Icon(
+                            imageVector = Icons.Default.DirectionsCar,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)
+                        )
                 }
             }
         }
@@ -133,8 +135,8 @@ private fun MercosulPlate(plate: String) {
             .width(100.dp)
             .height(40.dp)
             .clip(RoundedCornerShape(4.dp))
-            .border(1.dp, Color.Gray.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
-            .background(Color.White)
+            .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), RoundedCornerShape(4.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Box(
             modifier = Modifier
@@ -151,7 +153,7 @@ private fun MercosulPlate(plate: String) {
             Text(
                 text = plate,
                 style = MaterialTheme.typography.labelMedium,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )

@@ -30,6 +30,8 @@ import br.edu.unisatc.gearlog.ui.navigation.GearLogScreen
 import br.edu.unisatc.gearlog.ui.theme.JdmRed
 import br.edu.unisatc.gearlog.ui.theme.PremiumCard
 import br.edu.unisatc.gearlog.ui.theme.PremiumMuted
+import br.edu.unisatc.gearlog.ui.theme.premiumCard
+import br.edu.unisatc.gearlog.ui.theme.premiumMuted
 import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,7 +59,7 @@ fun GarageScreen(viewModel: VehicleViewModel, navController: NavController) {
             FloatingActionButton(
                 onClick = { navController.navigate(GearLogScreen.AddVehicle.route) },
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = CircleShape
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Adicionar Veículo")
@@ -81,13 +83,13 @@ fun GarageScreen(viewModel: VehicleViewModel, navController: NavController) {
                         imageVector = Icons.Default.DirectionsCar,
                         contentDescription = null,
                         modifier = Modifier.size(72.dp),
-                        tint = PremiumMuted
+                        tint = MaterialTheme.colorScheme.premiumMuted
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = "Sua garagem está vazia. Adicione seu primeiro projeto!",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = PremiumMuted,
+                        color = MaterialTheme.colorScheme.premiumMuted,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                 }
@@ -111,12 +113,12 @@ fun GarageScreen(viewModel: VehicleViewModel, navController: NavController) {
 
         if (selectedVehicleForMenu != null) {
             val vehicle = selectedVehicleForMenu!!
-            ModalBottomSheet(
+                ModalBottomSheet(
                 onDismissRequest = { selectedVehicleForMenu = null },
                 sheetState = sheetState,
                 dragHandle = { BottomSheetDefaults.DragHandle() },
-                containerColor = PremiumCard,
-                contentColor = Color.White
+                containerColor = MaterialTheme.colorScheme.premiumCard,
+                contentColor = MaterialTheme.colorScheme.onSurface
             ) {
                 Column(
                     modifier = Modifier
@@ -144,13 +146,13 @@ fun GarageScreen(viewModel: VehicleViewModel, navController: NavController) {
                                 modifier = Modifier
                                     .size(56.dp)
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFF141414)),
+                                                                    .background(MaterialTheme.colorScheme.premiumCard),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.DirectionsCar,
                                     contentDescription = null,
-                                    tint = PremiumMuted,
+                                    tint = MaterialTheme.colorScheme.premiumMuted,
                                     modifier = Modifier.size(28.dp)
                                 )
                             }
@@ -163,25 +165,25 @@ fun GarageScreen(viewModel: VehicleViewModel, navController: NavController) {
                                 text = "${vehicle.brand} ${vehicle.model}",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = vehicle.plate,
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = PremiumMuted
+                                color = MaterialTheme.colorScheme.premiumMuted
                             )
                         }
                     }
 
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = PremiumMuted.copy(alpha = 0.12f))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.premiumMuted.copy(alpha = 0.12f))
 
                     // Edit action wrapped in a pill-like Surface
-                    Surface(
+                        Surface(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp, vertical = 6.dp),
                         shape = RoundedCornerShape(12.dp),
-                        color = Color(0xFF2A2A2A)
+                        color = MaterialTheme.colorScheme.premiumCard
                     ) {
                         Row(
                             modifier = Modifier
@@ -202,24 +204,24 @@ fun GarageScreen(viewModel: VehicleViewModel, navController: NavController) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = null,
-                                tint = Color.White
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
                                 text = "Editar Veículo",
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
 
                     // Delete action wrapped in a pill-like Surface
-                    Surface(
+                        Surface(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp, vertical = 6.dp),
                         shape = RoundedCornerShape(12.dp),
-                        color = Color(0xFF2A2A2A)
+                        color = MaterialTheme.colorScheme.premiumCard
                     ) {
                         Row(
                             modifier = Modifier
@@ -245,13 +247,13 @@ fun GarageScreen(viewModel: VehicleViewModel, navController: NavController) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = null,
-                                tint = JdmRed
+                                tint = MaterialTheme.colorScheme.primary
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
                                 text = "Excluir Projeto",
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = JdmRed
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
@@ -269,7 +271,7 @@ fun GarageVehicleCard(vehicle: Vehicle, onClick: () -> Unit) {
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = PremiumCard
+            containerColor = MaterialTheme.colorScheme.premiumCard
         )
     ) {
         Row(
@@ -296,12 +298,12 @@ fun GarageVehicleCard(vehicle: Vehicle, onClick: () -> Unit) {
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.DirectionsCar,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp),
-                        tint = PremiumMuted
-                    )
+                        Icon(
+                            imageVector = Icons.Default.DirectionsCar,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.premiumMuted
+                        )
                 }
             }
 
@@ -314,17 +316,17 @@ fun GarageVehicleCard(vehicle: Vehicle, onClick: () -> Unit) {
                     .fillMaxHeight(),
                 verticalArrangement = Arrangement.Center
             ) {
-                Text(
+                    Text(
                     text = "${vehicle.brand} ${vehicle.model}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "${vehicle.year} • ${vehicle.plate}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = PremiumMuted
+                    color = MaterialTheme.colorScheme.premiumMuted
                 )
             }
         }

@@ -2,6 +2,7 @@ package br.edu.unisatc.gearlog.ui.vehicle
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,14 +24,15 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.ui.layout.ContentScale
-import coil.compose.AsyncImage
-import java.io.File
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import br.edu.unisatc.gearlog.util.PdfReportGenerator
+import br.edu.unisatc.gearlog.ui.reports.ReportDialog
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,25 +49,40 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import br.edu.unisatc.gearlog.ui.navigation.GearLogScreen
+import androidx.navigation.NavController
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import br.edu.unisatc.gearlog.model.LogRecord
-import br.edu.unisatc.gearlog.ui.theme.JdmRed
 import br.edu.unisatc.gearlog.ui.theme.PremiumCard
+import br.edu.unisatc.gearlog.ui.theme.premiumMuted
+import br.edu.unisatc.gearlog.ui.theme.premiumCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
     viewModel: VehicleViewModel,
-    onProfileClick: () -> Unit = {}
+    navController: NavController,
+    onProfileClick: () -> Unit = {},
+    onLogClick: (String) -> Unit
 ) {
     val allLogs by viewModel.vehicleLogs.collectAsState()
+    val currentVehicle by viewModel.currentVehicle.collectAsState()
     var selectedFilter by remember { mutableStateOf("ALL") }
-    var selectedLog by remember { mutableStateOf<LogRecord?>(null) }
+    var showReportDialog by remember { mutableStateOf(false) }
+    var logToDelete by remember { mutableStateOf<LogRecord?>(null) }
+    val ctx = LocalContext.current
 
     val filteredLogs = when (selectedFilter) {
         "MAINTENANCE" -> allLogs.filter { it.type == "MAINTENANCE" }
@@ -93,6 +110,12 @@ fun HistoryScreen(
                 .padding(16.dp)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                Button(onClick = { showReportDialog = true }) {
+                    Text("Exportar")
+                }
+            }
 
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
@@ -134,7 +157,7 @@ fun HistoryScreen(
                     Text(
                         text = "Nenhum registro encontrado",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.premiumMuted
                     )
                 }
             } else {
@@ -143,106 +166,70 @@ fun HistoryScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(filteredLogs) { log ->
-                        RegistroCard(log = log, onClick = { selectedLog = log })
+                        RegistroCard(
+                            log = log,
+                            onClick = { onLogClick(log.id) },
+                            onEdit = {
+                                if (log.type == "MOD") {
+                                    navController.navigate("edit_mod/${log.id}")
+                                } else {
+                                    navController.navigate("edit_maintenance/${log.id}")
+                                }
+                            },
+                            onDelete = {
+                                logToDelete = log
+                            }
+                        )
                     }
                 }
             }
         }
     }
 
-    if (selectedLog != null) {
-        ModalBottomSheet(
-            onDismissRequest = { selectedLog = null }
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = selectedLog!!.title,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                val isUpgrade = selectedLog!!.type == "MOD"
-                val accentColor = if (isUpgrade) Color(0xFFD7263D) else Color(0xFFAAAAAA)
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+    if (logToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { logToDelete = null },
+            title = { Text("Excluir Registro") },
+            text = { Text("Tem certeza que deseja excluir '${logToDelete?.title}'? Esta ação não pode ser desfeita.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val logId = logToDelete?.id ?: ""
+                        currentVehicle?.id?.let { vehicleId ->
+                            viewModel.deleteLogRecord(vehicleId, logId, {
+                                logToDelete = null
+                            }, {
+                                logToDelete = null
+                            })
+                        }
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
-                    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                    dateFormat.timeZone = TimeZone.getDefault()
-                    val formattedDate = dateFormat.format(Date(selectedLog!!.date))
-
-                    Text(
-                        text = formattedDate,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color(0xFF888888)
-                    )
-                    Text(
-                        text = "${selectedLog!!.odometer} km",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color(0xFF888888)
-                    )
-                    val costFormat = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
-                    val formattedCost = costFormat.format(selectedLog!!.cost)
-                    Text(
-                        text = formattedCost,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = accentColor,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text("Excluir")
                 }
-
-                if (selectedLog!!.photoUrl.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    AsyncImage(
-                        model = if (selectedLog!!.photoUrl.startsWith("http")) {
-                            selectedLog!!.photoUrl
-                        } else {
-                            File(selectedLog!!.photoUrl)
-                        },
-                        contentDescription = "Foto do Registro",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        contentScale = ContentScale.Crop
-                    )
+            },
+            dismissButton = {
+                TextButton(onClick = { logToDelete = null }) {
+                    Text("Cancelar")
                 }
-
-                if (isUpgrade && selectedLog!!.partBrand.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Marca: ${selectedLog!!.partBrand}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White
-                    )
-                }
-
-                if (!isUpgrade && selectedLog!!.description.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Notas/Descrição:",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = selectedLog!!.description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color(0xFFCCCCCC)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
             }
-        }
+        )
     }
+
+    val vehicleForReport = currentVehicle
+    if (showReportDialog && vehicleForReport != null) {
+        ReportDialog(
+            show = showReportDialog,
+            onDismiss = { showReportDialog = false },
+            vehicle = vehicleForReport,
+            logs = allLogs,
+            onGenerate = { type ->
+                PdfReportGenerator.generateVehicleReport(ctx, vehicleForReport, allLogs, type)
+            }
+        )
+    }
+
+
 }
 
 @Composable
@@ -256,8 +243,8 @@ fun FilterButton(
         modifier = Modifier,
         shape = RoundedCornerShape(50),
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) Color(0xFFD7263D) else Color(0xFF2A2A2A),
-            contentColor = if (isSelected) Color.White else Color(0xFFAAAAAA)
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
         )
     ) {
         Text(
@@ -270,11 +257,16 @@ fun FilterButton(
 }
 
 @Composable
-fun RegistroCard(log: LogRecord, onClick: () -> Unit = {}) {
+fun RegistroCard(
+    log: LogRecord,
+    onClick: () -> Unit = {},
+    onEdit: () -> Unit = {},
+    onDelete: () -> Unit = {}
+) {
     val isUpgrade = log.type == "MOD"
     val icon = if (isUpgrade) Icons.Default.FlashOn else Icons.Default.Build
-    val accentColor = if (isUpgrade) Color(0xFFD7263D) else Color(0xFFAAAAAA)
-    val priceColor = if (isUpgrade) Color(0xFFD7263D) else Color.White
+    val accentColor = if (isUpgrade) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.premiumMuted
+    val priceColor = if (isUpgrade) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
 
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     dateFormat.timeZone = TimeZone.getDefault()
@@ -283,12 +275,14 @@ fun RegistroCard(log: LogRecord, onClick: () -> Unit = {}) {
     val costFormat = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
     val formattedCost = costFormat.format(log.cost)
 
+    var showMenu by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = PremiumCard)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.premiumCard)
     ) {
         Row(
             modifier = Modifier
@@ -307,7 +301,7 @@ fun RegistroCard(log: LogRecord, onClick: () -> Unit = {}) {
                 Text(
                     text = log.title,
                     style = MaterialTheme.typography.titleMedium,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
@@ -315,7 +309,7 @@ fun RegistroCard(log: LogRecord, onClick: () -> Unit = {}) {
                 Text(
                     text = formattedDate,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF888888),
+                    color = MaterialTheme.colorScheme.premiumMuted,
                     fontSize = 12.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -332,8 +326,38 @@ fun RegistroCard(log: LogRecord, onClick: () -> Unit = {}) {
                     Text(
                         text = "${log.odometer} km",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFF888888),
+                        color = MaterialTheme.colorScheme.premiumMuted,
                         fontSize = 12.sp
+                    )
+                }
+            }
+            Box {
+                IconButton(onClick = { showMenu = true }) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "Mais opções",
+                        tint = MaterialTheme.colorScheme.premiumMuted
+                    )
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Editar") },
+                        onClick = {
+                            showMenu = false
+                            onEdit()
+                        },
+                        leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Excluir", color = MaterialTheme.colorScheme.error) },
+                        onClick = {
+                            showMenu = false
+                            onDelete()
+                        },
+                        leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error) }
                     )
                 }
             }

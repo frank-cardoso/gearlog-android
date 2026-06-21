@@ -12,10 +12,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.Text
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
-import br.edu.unisatc.gearlog.data.local.DataStoreManager
-import br.edu.unisatc.gearlog.repository.SettingsRepository
 import br.edu.unisatc.gearlog.ui.components.GearLogBottomNav
 import br.edu.unisatc.gearlog.ui.navigation.GearLogScreen
 import br.edu.unisatc.gearlog.ui.vehicle.DashboardScreen
@@ -26,19 +22,22 @@ import br.edu.unisatc.gearlog.ui.vehicle.AddVehicleScreen
 import br.edu.unisatc.gearlog.ui.vehicle.GarageScreen
 import br.edu.unisatc.gearlog.ui.vehicle.EditVehicleScreen
 import br.edu.unisatc.gearlog.ui.vehicle.HistoryScreen
+import br.edu.unisatc.gearlog.ui.vehicle.LogDetailScreen
+import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import br.edu.unisatc.gearlog.ui.ProfileScreen
 import br.edu.unisatc.gearlog.ui.parts.PartDetailsScreen
 import br.edu.unisatc.gearlog.ui.theme.ThemeViewModel
 import br.edu.unisatc.gearlog.ui.parts.PartsScreen
 import br.edu.unisatc.gearlog.ui.parts.PartsViewModel
 import br.edu.unisatc.gearlog.ui.settings.SettingsViewModel
-import br.edu.unisatc.gearlog.ui.settings.SettingsViewModelFactory
 
 @Composable
 fun MainScreen(
     viewModel: VehicleViewModel,
     themeViewModel: ThemeViewModel,
     partsViewModel: PartsViewModel,
+    settingsViewModel: SettingsViewModel,
     onAddVehicleClick: () -> Unit,
     onAddPartClick: (String) -> Unit,
     onEditPartClick: (String) -> Unit
@@ -71,9 +70,33 @@ fun MainScreen(
                         onBackClick = { navController.popBackStack() }
                     )
                 }
+                composable(
+                    route = "edit_maintenance/{logId}",
+                    arguments = listOf(navArgument("logId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val logId = backStackEntry.arguments?.getString("logId") ?: ""
+                    AddMaintenanceScreen(
+                        viewModel = viewModel,
+                        logId = logId,
+                        onSaveSuccess = { navController.popBackStack() },
+                        onBackClick = { navController.popBackStack() }
+                    )
+                }
                 composable(GearLogScreen.AddMod.route) {
                     AddModScreen(
                         viewModel = viewModel,
+                        onSaveSuccess = { navController.popBackStack() },
+                        onBackClick = { navController.popBackStack() }
+                    )
+                }
+                composable(
+                    route = "edit_mod/{logId}",
+                    arguments = listOf(navArgument("logId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val logId = backStackEntry.arguments?.getString("logId") ?: ""
+                    AddModScreen(
+                        viewModel = viewModel,
+                        logId = logId,
                         onSaveSuccess = { navController.popBackStack() },
                         onBackClick = { navController.popBackStack() }
                     )
@@ -93,7 +116,21 @@ fun MainScreen(
                 composable(GearLogScreen.History.route) {
                     HistoryScreen(
                         viewModel = viewModel,
-                        onProfileClick = { navController.navigate(GearLogScreen.Profile.route) }
+                        navController = navController,
+                        onProfileClick = { navController.navigate(GearLogScreen.Profile.route) },
+                        onLogClick = { logId -> navController.navigate("log_detail/$logId") }
+                    )
+                }
+
+                composable(
+                    route = "log_detail/{logId}",
+                    arguments = listOf(navArgument("logId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val logId = backStackEntry.arguments?.getString("logId") ?: ""
+                    LogDetailScreen(
+                        logId = logId,
+                        viewModel = viewModel,
+                        onBackClick = { navController.popBackStack() }
                     )
                 }
                 composable(GearLogScreen.Parts.route) {
@@ -118,15 +155,10 @@ fun MainScreen(
                     EditVehicleScreen(vehicleId = id, viewModel = viewModel, navController = navController)
                 }
                 composable(GearLogScreen.Profile.route) {
-                    val context = LocalContext.current
-                    val dataStoreManager = DataStoreManager(context)
-                    val repository = SettingsRepository(dataStoreManager)
-                    val factory = SettingsViewModelFactory(repository)
-                    val viewModel: SettingsViewModel = viewModel(factory = factory)
                     ProfileScreen(
                         themeViewModel = themeViewModel,
-                        onBackClick = { navController.popBackStack() },
-                        settingsViewModel = viewModel
+                        settingsViewModel = settingsViewModel,
+                        onBackClick = { navController.popBackStack() }
                     )
                 }
             }
