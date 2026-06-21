@@ -64,17 +64,31 @@ fun saveImageLocally(context: Context, uri: Uri): String? {
 fun AddModScreen(
     viewModel: VehicleViewModel,
     onSaveSuccess: () -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    logId: String? = null
 ) {
     val currentVehicle by viewModel.currentVehicle.collectAsState()
+    val logs by viewModel.vehicleLogs.collectAsState()
+    val existingLog = remember(logId, logs) { logs.find { it.id == logId } }
     val context = LocalContext.current
 
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-    var upgradeName by rememberSaveable { mutableStateOf("") }
-    var partBrand by rememberSaveable { mutableStateOf("") }
-    var dateText by rememberSaveable { mutableStateOf("") }
-    var odometerText by rememberSaveable { mutableStateOf("") }
-    var costText by rememberSaveable { mutableStateOf("") }
+    var upgradeName by rememberSaveable(existingLog) { mutableStateOf(existingLog?.title ?: "") }
+    var partBrand by rememberSaveable(existingLog) { mutableStateOf(existingLog?.partBrand ?: "") }
+    var dateText by rememberSaveable(existingLog) {
+        val date = existingLog?.date
+        if (date != null) {
+            val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+            val localDate = java.time.Instant.ofEpochMilli(date)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+            mutableStateOf(localDate.format(formatter))
+        } else {
+            mutableStateOf("")
+        }
+    }
+    var odometerText by rememberSaveable(existingLog) { mutableStateOf(existingLog?.odometer?.toString() ?: "") }
+    var costText by rememberSaveable(existingLog) { mutableStateOf(existingLog?.cost?.toString() ?: "") }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
@@ -89,7 +103,7 @@ fun AddModScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Nova Modificação") },
+                title = { Text(if (logId == null) "Nova Modificação" else "Editar Modificação") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Voltar")
@@ -225,17 +239,17 @@ fun AddModScreen(
                     val photoUrl = if (selectedImageUri != null) {
                         saveImageLocally(context, selectedImageUri!!) ?: ""
                     } else {
-                        ""
+                        existingLog?.photoUrl ?: ""
                     }
 
                     val log = LogRecord(
-                        id = "",
+                        id = logId ?: "",
                         type = "MOD",
                         title = upgradeName.trim(),
                         date = dateMillis,
                         odometer = odometer,
                         cost = cost,
-                        description = "",
+                        description = existingLog?.description ?: "",
                         partBrand = partBrand.trim(),
                         photoUrl = photoUrl
                     )
@@ -246,7 +260,7 @@ fun AddModScreen(
                             onSuccess = {
                                 coroutineScope.launch {
                                     snackbarHostState.showSnackbar(
-                                        message = "Upgrade salvo com sucesso.",
+                                        message = if (logId == null) "Upgrade salvo com sucesso." else "Upgrade atualizado com sucesso.",
                                         duration = SnackbarDuration.Short
                                     )
                                     onSaveSuccess()
@@ -260,7 +274,7 @@ fun AddModScreen(
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = JdmRed)
             ) {
-                Text("Salvar Upgrade", color = MaterialTheme.colorScheme.onPrimary)
+                Text(if (logId == null) "Salvar Upgrade" else "Atualizar Upgrade", color = MaterialTheme.colorScheme.onPrimary)
             }
         }
     }

@@ -8,8 +8,6 @@ import br.edu.unisatc.gearlog.model.LogRecord
 import br.edu.unisatc.gearlog.model.Vehicle
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
-import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -266,27 +264,6 @@ class VehicleViewModel(
             }
     }
 
-    fun uploadModImage(uri: android.net.Uri, onSuccess: (String) -> Unit, onError: (Exception) -> Unit) {
-        val storage = FirebaseStorage.getInstance().reference
-        val imageRef = storage.child("images/mods/${UUID.randomUUID()}.jpg")
-
-        imageRef.putFile(uri)
-            .addOnSuccessListener {
-                imageRef.downloadUrl.addOnSuccessListener { downloadUri ->
-                    onSuccess(downloadUri.toString())
-                }.addOnFailureListener { exception ->
-                    onError(exception)
-                }
-            }
-            .addOnFailureListener { exception ->
-                onError(exception)
-            }
-    }
-
-    /**
-     * Atualiza campos do veículo no Firestore.
-     * updatedData: mapa com campos/valores que devem ser atualizados.
-     */
     fun updateVehicle(vehicleId: String, updatedData: Map<String, Any>, onResult: (Boolean) -> Unit = {}) {
         val firestore = FirebaseFirestore.getInstance()
         val docRef = firestore.collection("vehicles").document(vehicleId)
@@ -315,6 +292,18 @@ class VehicleViewModel(
                 } ?: emptyList()
 
                 _vehicleLogs.value = logs
+            }
+    }
+
+    fun deleteLogRecord(vehicleId: String, logId: String, onSuccess: () -> Unit, onError: ((Throwable) -> Unit)? = null) {
+        val firestore = FirebaseFirestore.getInstance()
+        firestore.collection("vehicles").document(vehicleId).collection("logs").document(logId)
+            .delete()
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { exception ->
+                onError?.invoke(exception)
             }
     }
 

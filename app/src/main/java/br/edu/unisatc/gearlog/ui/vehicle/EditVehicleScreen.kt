@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -143,19 +144,29 @@ fun EditVehicleScreen(vehicleId: String, viewModel: VehicleViewModel, navControl
 
             Spacer(modifier = Modifier.weight(1f))
 
+            val context = LocalContext.current
+
             Button(
                 onClick = {
-                    // prepare updated map
-                    val updated = mutableMapOf<String, Any>()
-                    updated["brand"] = brand
-                    updated["model"] = model
-                    updated["plate"] = plate
-                    updated["year"] = year.toIntOrNull() ?: 0
-                    // prefer selectedImageUri if present, otherwise keep photoUrl
-                    val photoValue = selectedImageUri?.toString() ?: photoUrl
-                    updated["photoUrl"] = photoValue
+                    // determine final photo URL: save locally if user selected new image
+                    val finalPhotoUrl = if (selectedImageUri != null) {
+                        saveImageLocally(context, selectedImageUri!!) ?: photoUrl.ifBlank { "" }
+                    } else {
+                        photoUrl.ifBlank { "" }
+                    }
 
-                    viewModel.updateVehicle(vehicleId, updated) { success ->
+                    // update local state so UI reflects change immediately
+                    photoUrl = finalPhotoUrl
+
+                    val updatedData = mapOf(
+                        "brand" to brand,
+                        "model" to model,
+                        "plate" to plate,
+                        "year" to (year.toIntOrNull() ?: 0),
+                        "photoUrl" to finalPhotoUrl
+                    )
+
+                    viewModel.updateVehicle(vehicleId, updatedData) { success ->
                         if (success) {
                             navController.popBackStack()
                         } else {

@@ -49,6 +49,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -70,6 +71,8 @@ import java.util.Date
 import java.util.TimeZone
 import br.edu.unisatc.gearlog.ui.theme.PremiumCard
 import br.edu.unisatc.gearlog.ui.theme.PremiumMuted
+import br.edu.unisatc.gearlog.ui.theme.premiumCard
+import br.edu.unisatc.gearlog.ui.theme.premiumMuted
 import br.edu.unisatc.gearlog.ui.theme.JdmRed
 import br.edu.unisatc.gearlog.model.LogRecord
 import br.edu.unisatc.gearlog.ui.navigation.GearLogScreen
@@ -107,6 +110,7 @@ fun DashboardScreen(
     val totalMods = vehicleLogs.count { it.type == "MOD" }
     val currentOdometer = vehicleLogs.maxOfOrNull { it.odometer } ?: currentVehicleState?.odometer ?: 0
     var expanded by remember { mutableStateOf(false) }
+    // report dialog moved to History screen
 
     Scaffold(
         topBar = {
@@ -258,7 +262,7 @@ fun DashboardScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(180.dp),
-                            colors = CardDefaults.cardColors(containerColor = PremiumCard),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.premiumCard),
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Row(modifier = Modifier.fillMaxSize()) {
@@ -274,14 +278,14 @@ fun DashboardScreen(
                                         text = displayName,
                                         style = MaterialTheme.typography.titleLarge,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White,
+                                        color = MaterialTheme.colorScheme.onSurface,
                                         maxLines = 1
                                     )
                                     Spacer(modifier = Modifier.height(6.dp))
                                     Text(
                                         text = nickname,
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = PremiumMuted
+                                        color = MaterialTheme.colorScheme.premiumMuted
                                     )
                                     Spacer(modifier = Modifier.height(12.dp))
                                     Box(
@@ -289,13 +293,13 @@ fun DashboardScreen(
                                             .width(100.dp)
                                             .height(40.dp)
                                             .clip(RoundedCornerShape(4.dp))
-                                            .background(Color.White),
+                                            .background(MaterialTheme.colorScheme.surfaceVariant),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text(
                                             text = plate,
                                             style = MaterialTheme.typography.labelMedium,
-                                            color = Color.Black
+                                            color = MaterialTheme.colorScheme.onSurface
                                         )
                                     }
                                 }
@@ -306,7 +310,7 @@ fun DashboardScreen(
                                         .weight(1f)
                                         .fillMaxHeight()
                                         .clip(RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
-                                        .background(Color.Black.copy(alpha = 0.2f)),
+                                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.2f)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     if (!vehicle.photoUrl.isNullOrEmpty()) {
@@ -317,11 +321,11 @@ fun DashboardScreen(
                                             contentScale = ContentScale.Crop
                                         )
                                     } else {
-                                        Icon(
+                                            Icon(
                                             imageVector = Icons.Default.DirectionsCar,
                                             contentDescription = null,
                                             modifier = Modifier.size(48.dp),
-                                            tint = Color.White.copy(alpha = 0.15f)
+                                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)
                                         )
                                     }
                                 }
@@ -359,7 +363,7 @@ fun DashboardScreen(
                                         Icon(
                                             imageVector = Icons.Default.DirectionsCar,
                                             contentDescription = null,
-                                            tint = Color.White.copy(alpha = 0.95f),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.95f),
                                             modifier = Modifier.size(18.dp)
                                         )
                                         Spacer(modifier = Modifier.width(10.dp))
@@ -367,20 +371,20 @@ fun DashboardScreen(
                                             Text(
                                                 text = "VEÍCULO ATIVO",
                                                 style = MaterialTheme.typography.labelSmall,
-                                                color = Color.LightGray
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                                             )
                                             Text(
                                                 text = currentVehicleState?.let { "${it.brand} ${it.model}" } ?: "Sem veículo",
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.Bold,
-                                                color = Color.White,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 maxLines = 1
                                             )
                                         }
                                         Icon(
                                             imageVector = Icons.Default.ArrowDropDown,
                                             contentDescription = "Selecionar veículo",
-                                            tint = Color.White
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
                                 }
@@ -388,7 +392,7 @@ fun DashboardScreen(
                                 DropdownMenu(
                                     expanded = expanded,
                                     onDismissRequest = { expanded = false },
-                                    modifier = Modifier.background(PremiumCard)
+                                    modifier = Modifier.background(MaterialTheme.colorScheme.premiumCard)
                                 ) {
                                     vehicleList.forEach { car ->
                                         DropdownMenuItem(
@@ -398,19 +402,19 @@ fun DashboardScreen(
                                                         imageVector = Icons.Default.DirectionsCar,
                                                         contentDescription = null,
                                                         modifier = Modifier.size(18.dp),
-                                                        tint = Color.White.copy(alpha = 0.9f)
+                                                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
                                                     )
                                                     Spacer(modifier = Modifier.width(10.dp))
                                                     Column(modifier = Modifier.weight(1f)) {
                                                         Text(
                                                             text = "${car.brand} ${car.model}",
                                                             style = MaterialTheme.typography.bodyMedium,
-                                                            color = if (car.id == currentVehicleState?.id) JdmRed else Color.White
+                                                            color = if (car.id == currentVehicleState?.id) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                                                         )
                                                         Text(
                                                             text = car.plate,
                                                             style = MaterialTheme.typography.bodySmall,
-                                                            color = PremiumMuted
+                                                            color = MaterialTheme.colorScheme.premiumMuted
                                                         )
                                                     }
                                                     if (car.id == currentVehicleState?.id) {
@@ -438,9 +442,9 @@ fun DashboardScreen(
                         Button(
                             onClick = { showBottomSheet = true },
                             modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = JdmRed,
-                                contentColor = Color.White
+                                colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
                             )
                         ) {
                             Text("+ Novo Registro")
@@ -453,19 +457,21 @@ fun DashboardScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
+                                Text(
                                 text = "Últimos Registros",
                                 style = MaterialTheme.typography.titleMedium,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onSurface
                             )
-                            TextButton(
-                                onClick = { navController.navigate(GearLogScreen.History.route) }
-                            ) {
-                                Text(
-                                    text = "Ver Histórico Completo",
-                                    color = JdmRed
-                                )
-                            }
+                        // Export moved to History screen
+                        Spacer(modifier = Modifier.width(8.dp))
+                        TextButton(
+                            onClick = { navController.navigate(GearLogScreen.History.route) }
+                        ) {
+                            Text(
+                                text = "Ver Histórico Completo",
+                                color = JdmRed
+                            )
+                        }
                         }
                     }
 
@@ -483,6 +489,8 @@ fun DashboardScreen(
                         Spacer(modifier = Modifier.height(6.dp))
                     }
                 }
+
+                // Report generation UI removed from Dashboard — use Histórico screen to export reports
             }
         }
     }
@@ -493,7 +501,7 @@ fun LogHistoryCard(log: LogRecord) {
     val isMod = log.type == "MOD"
     val icon = if (isMod) Icons.Default.FlashOn else Icons.Default.Build
     val iconColor = if (isMod) JdmRed else MaterialTheme.colorScheme.primary
-    val detailColor = if (isMod) JdmRed else Color.Gray
+    val detailColor = if (isMod) JdmRed else MaterialTheme.colorScheme.premiumMuted
 
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     dateFormat.timeZone = TimeZone.getDefault()
@@ -504,7 +512,7 @@ fun LogHistoryCard(log: LogRecord) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = PremiumCard)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.premiumCard)
     ) {
         Row(
             modifier = Modifier
@@ -523,13 +531,13 @@ fun LogHistoryCard(log: LogRecord) {
                 Text(
                     text = log.title,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = formattedDate,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.LightGray
+                    color = MaterialTheme.colorScheme.premiumMuted
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(
@@ -538,12 +546,13 @@ fun LogHistoryCard(log: LogRecord) {
                     Text(
                         text = formattedCost,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = detailColor
+                        color = detailColor,
+                        fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = "${log.odometer} km",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.LightGray
+                        color = MaterialTheme.colorScheme.premiumMuted
                     )
                 }
             }

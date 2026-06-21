@@ -220,8 +220,8 @@ fun PartFilterButton(text: String, isSelected: Boolean, onClick: () -> Unit) {
         modifier = Modifier,
         shape = RoundedCornerShape(50),
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) Color(0xFFD7263D) else Color(0xFF2A2A2A),
-            contentColor = if (isSelected) Color.White else Color(0xFFAAAAAA)
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
         )
     ) {
         Text(

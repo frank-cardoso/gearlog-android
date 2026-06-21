@@ -30,15 +30,29 @@ import java.time.format.DateTimeFormatter
 fun AddMaintenanceScreen(
     viewModel: VehicleViewModel,
     onSaveSuccess: () -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    logId: String? = null
 ) {
     val currentVehicle by viewModel.currentVehicle.collectAsState()
+    val logs by viewModel.vehicleLogs.collectAsState()
+    val existingLog = remember(logId, logs) { logs.find { it.id == logId } }
 
-    var title by rememberSaveable { mutableStateOf("") }
-    var dateText by rememberSaveable { mutableStateOf("") }
-    var odometerText by rememberSaveable { mutableStateOf("") }
-    var costText by rememberSaveable { mutableStateOf("") }
-    var description by rememberSaveable { mutableStateOf("") }
+    var title by rememberSaveable(existingLog) { mutableStateOf(existingLog?.title ?: "") }
+    var dateText by rememberSaveable(existingLog) {
+        val date = existingLog?.date
+        if (date != null) {
+            val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+            val localDate = java.time.Instant.ofEpochMilli(date)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+            mutableStateOf(localDate.format(formatter))
+        } else {
+            mutableStateOf("")
+        }
+    }
+    var odometerText by rememberSaveable(existingLog) { mutableStateOf(existingLog?.odometer?.toString() ?: "") }
+    var costText by rememberSaveable(existingLog) { mutableStateOf(existingLog?.cost?.toString() ?: "") }
+    var description by rememberSaveable(existingLog) { mutableStateOf(existingLog?.description ?: "") }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
@@ -48,7 +62,7 @@ fun AddMaintenanceScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Nova Manutenção") },
+                title = { Text(if (logId == null) "Nova Manutenção" else "Editar Manutenção") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -150,7 +164,7 @@ fun AddMaintenanceScreen(
                     val cost = costText.replace(',', '.').toDoubleOrNull() ?: 0.0
 
                     val log = LogRecord(
-                        id = "",
+                        id = logId ?: "",
                         type = "MAINTENANCE",
                         title = title.trim(),
                         date = dateMillis,
@@ -158,7 +172,7 @@ fun AddMaintenanceScreen(
                         cost = cost,
                         description = description.trim(),
                         partBrand = "",
-                        photoUrl = ""
+                        photoUrl = existingLog?.photoUrl ?: ""
                     )
 
                     // call viewModel to persist
@@ -168,7 +182,7 @@ fun AddMaintenanceScreen(
                             onSuccess = {
                                 coroutineScope.launch {
                                     snackbarHostState.showSnackbar(
-                                        message = "Registro salvo com sucesso.",
+                                        message = if (logId == null) "Registro salvo com sucesso." else "Registro atualizado com sucesso.",
                                         duration = SnackbarDuration.Short
                                     )
                                     onSaveSuccess()
@@ -184,7 +198,7 @@ fun AddMaintenanceScreen(
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = JdmRed)
             ) {
-                Text("Salvar Registro", color = MaterialTheme.colorScheme.onPrimary)
+                Text(if (logId == null) "Salvar Registro" else "Atualizar Registro", color = MaterialTheme.colorScheme.onPrimary)
             }
         }
     }

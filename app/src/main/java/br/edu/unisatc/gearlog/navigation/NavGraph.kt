@@ -125,10 +125,14 @@ fun NavGraph(modifier: Modifier = Modifier, themeViewModel: ThemeViewModel) {
 
         composable("dashboard") {
             val viewModel: VehicleViewModel = viewModel(factory = vehicleViewModelFactory)
+            val settingsRepository = SettingsRepository(dataStoreManager)
+            val settingsFactory = SettingsViewModelFactory(settingsRepository)
+            val settingsViewModel: SettingsViewModel = viewModel(factory = settingsFactory)
             MainScreen(
                 viewModel = viewModel,
                 themeViewModel = themeViewModel,
                 partsViewModel = partsViewModel,
+                settingsViewModel = settingsViewModel,
                 onAddVehicleClick = { navController.navigate("add_vehicle") },
                 onAddPartClick = { status -> navController.navigate("add_part/$status") },
                 onEditPartClick = { partId -> navController.navigate("edit_part/$partId") }
