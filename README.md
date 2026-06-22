@@ -4,25 +4,28 @@ Projeto desenvolvido para a disciplina de ABP (Aprendizagem Baseada em Projetos)
 
 ## 🚀 Funcionalidades Principais
 
-* **Dashboard:** Resumo de gastos e alertas de manutenções próximas.
-* **Gestão de Veículos:** Cadastro e edição de múltiplos carros (CRUD 1).
-* **Histórico Técnico:** Registro detalhado de manutenções com foco em marcas de peças (CRUD 1).
-* **Inventário de Peças:** Lista de desejos e estoque de peças adquiridas (CRUD 2).
-* **Assistente de Diagnóstico:** Integração com IA para sugestão de causas mecânicas.
+* **Dashboard:** Resumo de gastos, quilometragem e visualização rápida dos últimos registros.
+* **Gestão de Veículos:** Cadastro, edição e exclusão de múltiplos veículos com suporte a fotos.
+* **Histórico Técnico:** Registro detalhado de manutenções e upgrades (modificações).
+* **Exportação de Relatórios:** Geração de relatórios em PDF do histórico do veículo para compartilhamento.
+* **Inventário de Peças:** Gestão de peças e lista de desejos (Wishlist).
+* **Perfil de Usuário:** Personalização de experiência e configurações de tema (Dark/Light).
 
 ## 🛠️ Tecnologias Utilizadas
 
-* **Android Nativo:** Kotlin com Jetpack Compose.
-* **Arquitetura:** MVVM (Model-View-ViewModel).
-* **Backend:** API REST desenvolvida em Spring Boot (Java/PostgreSQL).
-* **Comunicação:** Retrofit & Gson.
-* **Injeção de Dependência:** (Opcional - ex: Hilt ou Koin).
+* **Android Nativo:** Kotlin com Jetpack Compose para uma UI moderna e declarativa.
+* **Arquitetura:** MVVM (Model-View-ViewModel) com StateFlow para gestão de estado reativa.
+* **Backend & Database:** Firebase (Authentication, Firestore para dados NoSQL e Storage para imagens).
+* **Navegação:** Jetpack Navigation Compose.
+* **Carregamento de Imagens:** Coil.
+* **Persistência Local:** DataStore Preferences para configurações de tema.
 
 ## 📋 Requisitos para Rodar o Projeto
 
 * Android Studio Ladybug (ou superior).
-* Dispositivo Android com API 26 (Android 8.0) ou superior.
-* Conexão com a internet para sincronização com o Backend.
+* Dispositivo Android ou Emulador com API 26 (Android 8.0) ou superior.
+* Conexão com a internet para sincronização com o Firebase.
+* **Arquivo de Configuração:** É obrigatório possuir o arquivo `google-services.json` na pasta `/app` do projeto para a integração com o Firebase funcionar.
 
 ## ✅ Como Executar Localmente (Obrigatório)
 
@@ -31,41 +34,35 @@ Projeto desenvolvido para a disciplina de ABP (Aprendizagem Baseada em Projetos)
 * **Android Studio** Ladybug (ou superior).
 * **JDK 17** instalado (recomendado pela configuração do projeto).
 * **Android SDK** com **API 36** e **Build Tools** compatíveis.
-* **Dispositivo ou Emulador** com **API 26+**.
+* **Firebase Config:** O arquivo `google-services.json` deve ser solicitado aos desenvolvedores ou configurado via console do Firebase.
 
 ### Passo a passo
 
 1. **Clone o repositório** e abra a pasta do projeto no Android Studio.
-2. **Configure o SDK** em `local.properties` (o Android Studio costuma gerar automaticamente):
-
-```properties
-sdk.dir=C\\:\\Users\\<seu-usuario>\\AppData\\Local\\Android\\Sdk
-```
-
+2. **Adicione o Firebase:** Cole o arquivo `google-services.json` dentro do diretório `app/`.
 3. **Sincronize o Gradle** (`File > Sync Project with Gradle Files`).
 4. **Execute o app** com um dispositivo/emulador conectado (`Run > Run 'app'`).
 
-### Opção via terminal (Windows)
+## 👨‍🏫 Espaço do Professor
 
-```powershell
-C:\Users\frank\AndroidStudioProjects\GearLog\gradlew.bat assembleDebug
-C:\Users\frank\AndroidStudioProjects\GearLog\gradlew.bat installDebug
-```
-
-> Observacao: o `installDebug` requer um dispositivo/emulador conectado.
+Caso encontre qualquer dificuldade no primeiro acesso ou bloqueio de autenticação durante a correção:
+* **Contato:** Frank Cardoso
+* **Telefone/WhatsApp:** (48) 999238-378
+* **GitHub:** [frank-cardoso](https://github.com/frank-cardoso)
 
 ## 👥 Integrantes do Grupo
 
 * **Frank Cardoso** - [frank-cardoso](https://github.com/frank-cardoso)
 * **João Miguel** - [JoaoMiguelRita](https://github.com/JoaoMiguelRita)
-
+* **Gustavo de Freitas Cardoso** - [GustavodeFreitasCardoso](https://github.com/GustavodeFreitasCardoso)
+* **Gustavo Nunes** - [ogustavonunes](https://github.com/ogustavonunes)
 
 ## 📱 Integrações Nativas (Hardware/OS)
 
-* **Câmera:** Captura de fotos dos veículos e comprovantes de manutenção.
-* **Notificações:** Alertas de revisões preventivas baseadas em data/KM.
-* **Biometria:** Autenticação segura para acesso ao perfil do usuário.
-* **API de Compartilhamento:** Exportação de listas de peças para fornecedores.
+* **Câmera:** Captura de fotos dos veículos e peças através da integração com o sistema.
+* **Biometria:** Suporte a autenticação biométrica (Digital/Rosto) para acesso seguro.
+* **Sistema de Arquivos:** Geração e compartilhamento de arquivos PDF (Relatórios).
+* **Temas do Sistema:** Suporte completo a Modo Escuro (Dark Mode) e Modo Claro.
 
 ---
 *Projeto acadêmico focado em resolver problemas reais de entusiastas automotivos.*
