@@ -1,6 +1,7 @@
 # GearLog - Gestão de Manutenção Automotiva 🚗
 
 Projeto desenvolvido para a disciplina de ABP (Aprendizagem Baseada em Projetos) na **UniSatc**. O objetivo é auxiliar proprietários de veículos usados e antigos no controle rigoroso de manutenções preventivas e corretivas.
+https://gamma.app/docs/Sistema-de-Gestao-de-Manutencao-Automotiva-o70l6jhjo6gz2za?mode=present#card-xl6fakddwchjgit
 
 ## 🚀 Funcionalidades Principais
 
